@@ -155,10 +155,10 @@ module tb_cdc_interleaved();
         @(posedge master_busy);
         $display("Master module started processing at %t", $time);
         
-        // Track read-after-write sequences
-        fork
+        // Track read-after-write sequences using named blocks for proper termination
+        fork: monitor_fork
             // Monitor write commands
-            begin
+            begin: monitor_writes
                 forever begin
                     @(posedge clk_90mhz);
                     if (cmd_fifo_wr_en && !cmd_fifo_full && cmd_fifo_wr_data[16]) begin
@@ -170,7 +170,7 @@ module tb_cdc_interleaved();
             end
             
             // Monitor read commands
-            begin
+            begin: monitor_reads
                 forever begin
                     @(posedge clk_90mhz);
                     if (cmd_fifo_wr_en && !cmd_fifo_full && !cmd_fifo_wr_data[16]) begin
@@ -181,7 +181,7 @@ module tb_cdc_interleaved();
             end
             
             // Monitor read data coming back
-            begin
+            begin: monitor_responses
                 forever begin
                     @(posedge clk_90mhz);
                     if (resp_fifo_rd_en && !resp_fifo_empty) begin
@@ -191,7 +191,7 @@ module tb_cdc_interleaved();
             end
             
             // Monitor BRAM operations in 65 MHz domain
-            begin
+            begin: monitor_bram
                 forever begin
                     @(posedge clk_65mhz);
                     if (bram_wr_en) begin
@@ -210,7 +210,7 @@ module tb_cdc_interleaved();
             end
             
             // Monitor CDC operation
-            begin
+            begin: monitor_cdc_cmd
                 forever begin
                     @(posedge clk_65mhz);
                     if (cmd_fifo_rd_en && !cmd_fifo_empty) begin
@@ -219,7 +219,7 @@ module tb_cdc_interleaved();
                 end
             end
             
-            begin
+            begin: monitor_cdc_resp
                 forever begin
                     @(posedge clk_90mhz);
                     if (resp_fifo_rd_en && !resp_fifo_empty) begin
@@ -229,7 +229,7 @@ module tb_cdc_interleaved();
             end
             
             // Termination condition
-            begin
+            begin: completion_check
                 wait(!master_busy);
                 #500;
                 $display("Test completed at %t", $time);
@@ -237,6 +237,15 @@ module tb_cdc_interleaved();
                     $display("INTERLEAVED TEST PASSED: All operations verified successfully");
                 else
                     $display("INTERLEAVED TEST FAILED: Data verification errors detected");
+                
+                // Disable all monitoring processes before finishing
+                disable monitor_writes;
+                disable monitor_reads;
+                disable monitor_responses;
+                disable monitor_bram;
+                disable monitor_cdc_cmd;
+                disable monitor_cdc_resp;
+                
                 $finish;
             end
         join

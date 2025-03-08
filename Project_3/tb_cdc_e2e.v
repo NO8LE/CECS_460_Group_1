@@ -203,20 +203,22 @@ module tb_cdc_e2e();
         wait(busy);
         $display("Time %t: Long-running operation started", $time);
         
-        // Wait for completion with timeout
-        fork
-            begin
+        // Wait for completion with timeout using named blocks
+        fork: timeout_fork
+            begin: wait_for_completion
                 wait(!busy);
                 $display("Time %t: Long-running operation completed normally", $time);
+                disable timeout_check;
             end
-            begin
+            begin: timeout_check
                 #50000; // 50μs timeout
                 if (busy) begin
                     $display("Time %t: ERROR - Timeout waiting for operation to complete", $time);
                     $finish;
                 end
+                disable wait_for_completion;
             end
-        join_any
+        join
         
         // Check result
         if (success)
