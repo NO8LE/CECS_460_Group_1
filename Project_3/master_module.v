@@ -128,4 +128,3 @@ module master_module(
     end
 
 endmodule
-</kodu_content>
