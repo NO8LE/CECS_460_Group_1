@@ -1,0 +1,378 @@
+launch_simulation
+Command: launch_simulation 
+INFO: [Vivado 12-12493] Simulation top is 'fir_tb'
+WARNING: [Vivado 12-13277] Compiled library path does not exist: ''
+INFO: [Vivado 12-5682] Launching behavioral simulation in '/home/tnoble/cecs460_project4/project_4/project_4.sim/sim_1/behav/xsim'
+INFO: [SIM-utils-51] Simulation object is 'sim_1'
+INFO: [SIM-utils-72] Using boost library from '/tools/Xilinx/Vivado/2022.1/tps/boost_1_72_0'
+INFO: [SIM-utils-54] Inspecting design source files for 'fir_tb' in fileset 'sim_1'...
+INFO: [USF-XSim-97] Finding global include files...
+INFO: [USF-XSim-98] Fetching design files from 'sim_1'...
+INFO: [USF-XSim-2] XSim::Compile design
+INFO: [USF-XSim-61] Executing 'COMPILE and ANALYZE' step in '/home/tnoble/cecs460_project4/project_4/project_4.sim/sim_1/behav/xsim'
+xvlog --incr --relax -prj fir_tb_vlog.prj
+Waiting for jobs to finish...
+No pending jobs, compilation finished.
+INFO: [USF-XSim-69] 'compile' step finished in '1' seconds
+INFO: [USF-XSim-3] XSim::Elaborate design
+INFO: [USF-XSim-61] Executing 'ELABORATE' step in '/home/tnoble/cecs460_project4/project_4/project_4.sim/sim_1/behav/xsim'
+xelab --incr --debug typical --relax --mt 8 -L xil_defaultlib -L unisims_ver -L unimacro_ver -L secureip --snapshot fir_tb_behav xil_defaultlib.fir_tb xil_defaultlib.glbl -log elaborate.log
+Vivado Simulator v2022.1
+Copyright 1986-1999, 2001-2022 Xilinx, Inc. All Rights Reserved.
+Running: /tools/Xilinx/Vivado/2022.1/bin/unwrapped/lnx64.o/xelab --incr --debug typical --relax --mt 8 -L xil_defaultlib -L unisims_ver -L unimacro_ver -L secureip --snapshot fir_tb_behav xil_defaultlib.fir_tb xil_defaultlib.glbl -log elaborate.log 
+Using 8 slave threads.
+Starting static elaboration
+Pass Through NonSizing Optimizer
+Completed static elaboration
+INFO: [XSIM 43-4323] No Change in HDL. Linking previously generated obj files to create kernel
+INFO: [USF-XSim-69] 'elaborate' step finished in '1' seconds
+INFO: [USF-XSim-4] XSim::Simulate design
+INFO: [USF-XSim-61] Executing 'SIMULATE' step in '/home/tnoble/cecs460_project4/project_4/project_4.sim/sim_1/behav/xsim'
+INFO: [USF-XSim-98] *** Running xsim
+   with args "fir_tb_behav -key {Behavioral:sim_1:Functional:fir_tb} -tclbatch {fir_tb.tcl} -log {simulate.log}"
+INFO: [USF-XSim-8] Loading simulator feature
+Time resolution is 1 ps
+source fir_tb.tcl
+# set curr_wave [current_wave_config]
+# if { [string length $curr_wave] == 0 } {
+#   if { [llength [get_objects]] > 0} {
+#     add_wave /
+#     set_property needs_save false [current_wave_config]
+#   } else {
+#      send_msg_id Add_Wave-1 WARNING "No top level signals found. Simulator will start without a wave window. If you want to open a wave window go to 'File->New Waveform Configuration' or type 'create_wave_config' in the TCL console."
+#   }
+# }
+# run 100000ns
+Starting testbench at time                    0
+Time=                   0, Full Counter=         0, Cycle Counter=0, Done=x, State(non-pipe)= 0
+Time=                5000, Full Counter=         0, Cycle Counter=0, Done=0, State(non-pipe)= 0
+Reset complete at time                30000
+DUT Memory initialized with sine wave test signal
+Memory contents from    0 to    9:
+mem[          0] =    0
+mem[          1] =    0
+mem[          2] =    0
+mem[          3] =    0
+mem[          4] =    0
+mem[          5] =    0
+mem[          6] =    0
+mem[          7] =    0
+mem[          8] =    0
+mem[          9] =    0
+
+Starting non-pipelined FIR filter test at time              2195000...
+Time=             2205000, Full Counter=         1, Cycle Counter=1, Done=0, State(non-pipe)= 1
+Start pulse completed at time              2215000
+Time=             2215000, Full Counter=         2, Cycle Counter=2, Done=0, State(non-pipe)= 2
+Time=             2225000, Full Counter=         3, Cycle Counter=3, Done=0, State(non-pipe)= 3
+Time=             2235000, Full Counter=         4, Cycle Counter=4, Done=0, State(non-pipe)= 4
+Time=             2245000, Full Counter=         5, Cycle Counter=5, Done=0, State(non-pipe)= 5
+Time=             2255000, Full Counter=         6, Cycle Counter=6, Done=0, State(non-pipe)= 6
+Time=             2265000, Full Counter=         7, Cycle Counter=7, Done=0, State(non-pipe)= 7
+Time=             2275000, Full Counter=         8, Cycle Counter=0, Done=0, State(non-pipe)= 8
+Time=             2285000, Full Counter=         9, Cycle Counter=1, Done=0, State(non-pipe)= 9
+Time=             2295000, Full Counter=        10, Cycle Counter=2, Done=0, State(non-pipe)=10
+Time=             2305000, Full Counter=        11, Cycle Counter=3, Done=0, State(non-pipe)=11
+Time=             2315000, Full Counter=        12, Cycle Counter=4, Done=0, State(non-pipe)=12
+Time=             2325000, Full Counter=        13, Cycle Counter=5, Done=0, State(non-pipe)= 1
+Time=             2335000, Full Counter=        14, Cycle Counter=6, Done=0, State(non-pipe)= 2
+Time=             2345000, Full Counter=        15, Cycle Counter=7, Done=0, State(non-pipe)= 3
+Time=             2355000, Full Counter=        16, Cycle Counter=0, Done=0, State(non-pipe)= 4
+Time=             2365000, Full Counter=        17, Cycle Counter=1, Done=0, State(non-pipe)= 5
+Time=             2375000, Full Counter=        18, Cycle Counter=2, Done=0, State(non-pipe)= 6
+Time=             2385000, Full Counter=        19, Cycle Counter=3, Done=0, State(non-pipe)= 7
+Time=             2395000, Full Counter=        20, Cycle Counter=4, Done=0, State(non-pipe)= 8
+Time=             2405000, Full Counter=        21, Cycle Counter=5, Done=0, State(non-pipe)= 9
+Time=             2415000, Full Counter=        22, Cycle Counter=6, Done=0, State(non-pipe)=10
+Time=             2425000, Full Counter=        23, Cycle Counter=7, Done=0, State(non-pipe)=11
+Time=             2435000, Full Counter=        24, Cycle Counter=0, Done=0, State(non-pipe)=12
+Time=             2445000, Full Counter=        25, Cycle Counter=1, Done=0, State(non-pipe)= 1
+Time=             2455000, Full Counter=        26, Cycle Counter=2, Done=0, State(non-pipe)= 2
+Time=             2465000, Full Counter=        27, Cycle Counter=3, Done=0, State(non-pipe)= 3
+Time=             2475000, Full Counter=        28, Cycle Counter=4, Done=0, State(non-pipe)= 4
+Time=             2485000, Full Counter=        29, Cycle Counter=5, Done=0, State(non-pipe)= 5
+Time=             2495000, Full Counter=        30, Cycle Counter=6, Done=0, State(non-pipe)= 6
+Time=             2505000, Full Counter=        31, Cycle Counter=7, Done=0, State(non-pipe)= 7
+Time=             2515000, Full Counter=        32, Cycle Counter=0, Done=0, State(non-pipe)= 8
+Time=             2525000, Full Counter=        33, Cycle Counter=1, Done=0, State(non-pipe)= 9
+Time=             2535000, Full Counter=        34, Cycle Counter=2, Done=0, State(non-pipe)=10
+Time=             2545000, Full Counter=        35, Cycle Counter=3, Done=0, State(non-pipe)=11
+Time=             2555000, Full Counter=        36, Cycle Counter=4, Done=0, State(non-pipe)=12
+Time=             2565000, Full Counter=        37, Cycle Counter=5, Done=0, State(non-pipe)= 1
+Time=             2575000, Full Counter=        38, Cycle Counter=6, Done=0, State(non-pipe)= 2
+Time=             2585000, Full Counter=        39, Cycle Counter=7, Done=0, State(non-pipe)= 3
+Time=             2595000, Full Counter=        40, Cycle Counter=0, Done=0, State(non-pipe)= 4
+Time=             2605000, Full Counter=        41, Cycle Counter=1, Done=0, State(non-pipe)= 5
+Time=             2615000, Full Counter=        42, Cycle Counter=2, Done=0, State(non-pipe)= 6
+Time=             2625000, Full Counter=        43, Cycle Counter=3, Done=0, State(non-pipe)= 7
+Time=             2635000, Full Counter=        44, Cycle Counter=4, Done=0, State(non-pipe)= 8
+Time=             2645000, Full Counter=        45, Cycle Counter=5, Done=0, State(non-pipe)= 9
+Time=             2655000, Full Counter=        46, Cycle Counter=6, Done=0, State(non-pipe)=10
+Time=             2665000, Full Counter=        47, Cycle Counter=7, Done=0, State(non-pipe)=11
+Time=             2675000, Full Counter=        48, Cycle Counter=0, Done=0, State(non-pipe)=12
+Time=             2685000, Full Counter=        49, Cycle Counter=1, Done=0, State(non-pipe)= 1
+Time=             2695000, Full Counter=        50, Cycle Counter=2, Done=0, State(non-pipe)= 2
+Time=             2705000, Full Counter=        51, Cycle Counter=3, Done=0, State(non-pipe)= 3
+Time=             2715000, Full Counter=        52, Cycle Counter=4, Done=0, State(non-pipe)= 4
+Time=             2725000, Full Counter=        53, Cycle Counter=5, Done=0, State(non-pipe)= 5
+Time=             2735000, Full Counter=        54, Cycle Counter=6, Done=0, State(non-pipe)= 6
+Time=             2745000, Full Counter=        55, Cycle Counter=7, Done=0, State(non-pipe)= 7
+Time=             2755000, Full Counter=        56, Cycle Counter=0, Done=0, State(non-pipe)= 8
+Time=             2765000, Full Counter=        57, Cycle Counter=1, Done=0, State(non-pipe)= 9
+Time=             2775000, Full Counter=        58, Cycle Counter=2, Done=0, State(non-pipe)=10
+Time=             2785000, Full Counter=        59, Cycle Counter=3, Done=0, State(non-pipe)=11
+Time=             2795000, Full Counter=        60, Cycle Counter=4, Done=0, State(non-pipe)=12
+Time=             2805000, Full Counter=        61, Cycle Counter=5, Done=0, State(non-pipe)= 1
+Time=             2815000, Full Counter=        62, Cycle Counter=6, Done=0, State(non-pipe)= 2
+Time=             2825000, Full Counter=        63, Cycle Counter=7, Done=0, State(non-pipe)= 3
+Time=             2835000, Full Counter=        64, Cycle Counter=0, Done=0, State(non-pipe)= 4
+Time=             2845000, Full Counter=        65, Cycle Counter=1, Done=0, State(non-pipe)= 5
+Time=             2855000, Full Counter=        66, Cycle Counter=2, Done=0, State(non-pipe)= 6
+Time=             2865000, Full Counter=        67, Cycle Counter=3, Done=0, State(non-pipe)= 7
+Time=             2875000, Full Counter=        68, Cycle Counter=4, Done=0, State(non-pipe)= 8
+Time=             2885000, Full Counter=        69, Cycle Counter=5, Done=0, State(non-pipe)= 9
+Time=             2895000, Full Counter=        70, Cycle Counter=6, Done=0, State(non-pipe)=10
+Time=             2905000, Full Counter=        71, Cycle Counter=7, Done=0, State(non-pipe)=11
+Time=             2915000, Full Counter=        72, Cycle Counter=0, Done=0, State(non-pipe)=12
+Time=             2925000, Full Counter=        73, Cycle Counter=1, Done=0, State(non-pipe)= 1
+Time=             2935000, Full Counter=        74, Cycle Counter=2, Done=0, State(non-pipe)= 2
+Time=             2945000, Full Counter=        75, Cycle Counter=3, Done=0, State(non-pipe)= 3
+Time=             2955000, Full Counter=        76, Cycle Counter=4, Done=0, State(non-pipe)= 4
+Time=             2965000, Full Counter=        77, Cycle Counter=5, Done=0, State(non-pipe)= 5
+Time=             2975000, Full Counter=        78, Cycle Counter=6, Done=0, State(non-pipe)= 6
+Time=             2985000, Full Counter=        79, Cycle Counter=7, Done=0, State(non-pipe)= 7
+Time=             2995000, Full Counter=        80, Cycle Counter=0, Done=0, State(non-pipe)= 8
+Time=             3005000, Full Counter=        81, Cycle Counter=1, Done=0, State(non-pipe)= 9
+Time=             3015000, Full Counter=        82, Cycle Counter=2, Done=0, State(non-pipe)=10
+Time=             3025000, Full Counter=        83, Cycle Counter=3, Done=0, State(non-pipe)=11
+Time=             3035000, Full Counter=        84, Cycle Counter=4, Done=0, State(non-pipe)=12
+Time=             3045000, Full Counter=        85, Cycle Counter=5, Done=0, State(non-pipe)= 1
+Time=             3055000, Full Counter=        86, Cycle Counter=6, Done=0, State(non-pipe)= 2
+Time=             3065000, Full Counter=        87, Cycle Counter=7, Done=0, State(non-pipe)= 3
+Time=             3075000, Full Counter=        88, Cycle Counter=0, Done=0, State(non-pipe)= 4
+Time=             3085000, Full Counter=        89, Cycle Counter=1, Done=0, State(non-pipe)= 5
+Time=             3095000, Full Counter=        90, Cycle Counter=2, Done=0, State(non-pipe)= 6
+Time=             3105000, Full Counter=        91, Cycle Counter=3, Done=0, State(non-pipe)= 7
+Time=             3115000, Full Counter=        92, Cycle Counter=4, Done=0, State(non-pipe)= 8
+Time=             3125000, Full Counter=        93, Cycle Counter=5, Done=0, State(non-pipe)= 9
+Time=             3135000, Full Counter=        94, Cycle Counter=6, Done=0, State(non-pipe)=10
+Time=             3145000, Full Counter=        95, Cycle Counter=7, Done=0, State(non-pipe)=11
+Time=             3155000, Full Counter=        96, Cycle Counter=0, Done=0, State(non-pipe)=12
+Time=             3165000, Full Counter=        97, Cycle Counter=1, Done=0, State(non-pipe)= 1
+Time=             3175000, Full Counter=        98, Cycle Counter=2, Done=0, State(non-pipe)= 2
+Time=             3185000, Full Counter=        99, Cycle Counter=3, Done=0, State(non-pipe)= 3
+Time=             3195000, Full Counter=       100, Cycle Counter=4, Done=0, State(non-pipe)= 4
+Time=             3205000, Full Counter=       101, Cycle Counter=5, Done=0, State(non-pipe)= 5
+Time=             3215000, Full Counter=       102, Cycle Counter=6, Done=0, State(non-pipe)= 6
+Time=             3225000, Full Counter=       103, Cycle Counter=7, Done=0, State(non-pipe)= 7
+Time=             3235000, Full Counter=       104, Cycle Counter=0, Done=0, State(non-pipe)= 8
+Time=             3245000, Full Counter=       105, Cycle Counter=1, Done=0, State(non-pipe)= 9
+Time=             3255000, Full Counter=       106, Cycle Counter=2, Done=0, State(non-pipe)=10
+Time=             3265000, Full Counter=       107, Cycle Counter=3, Done=0, State(non-pipe)=11
+Time=             3275000, Full Counter=       108, Cycle Counter=4, Done=0, State(non-pipe)=12
+Time=             3285000, Full Counter=       109, Cycle Counter=5, Done=0, State(non-pipe)= 1
+Time=             3295000, Full Counter=       110, Cycle Counter=6, Done=0, State(non-pipe)= 2
+Time=             3305000, Full Counter=       111, Cycle Counter=7, Done=0, State(non-pipe)= 3
+Time=             3315000, Full Counter=       112, Cycle Counter=0, Done=0, State(non-pipe)= 4
+Time=             3325000, Full Counter=       113, Cycle Counter=1, Done=0, State(non-pipe)= 5
+Time=             3335000, Full Counter=       114, Cycle Counter=2, Done=0, State(non-pipe)= 6
+Time=             3345000, Full Counter=       115, Cycle Counter=3, Done=0, State(non-pipe)= 7
+Time=             3355000, Full Counter=       116, Cycle Counter=4, Done=0, State(non-pipe)= 8
+Time=             3365000, Full Counter=       117, Cycle Counter=5, Done=0, State(non-pipe)= 9
+Time=             3375000, Full Counter=       118, Cycle Counter=6, Done=0, State(non-pipe)=10
+Time=             3385000, Full Counter=       119, Cycle Counter=7, Done=0, State(non-pipe)=11
+Time=             3395000, Full Counter=       120, Cycle Counter=0, Done=0, State(non-pipe)=12
+Time=             3405000, Full Counter=       121, Cycle Counter=1, Done=0, State(non-pipe)= 1
+Time=             3415000, Full Counter=       122, Cycle Counter=2, Done=0, State(non-pipe)= 2
+Time=             3425000, Full Counter=       123, Cycle Counter=3, Done=0, State(non-pipe)= 3
+Time=             3435000, Full Counter=       124, Cycle Counter=4, Done=0, State(non-pipe)= 4
+Time=             3445000, Full Counter=       125, Cycle Counter=5, Done=0, State(non-pipe)= 5
+Time=             3455000, Full Counter=       126, Cycle Counter=6, Done=0, State(non-pipe)= 6
+Time=             3465000, Full Counter=       127, Cycle Counter=7, Done=0, State(non-pipe)= 7
+Time=             3475000, Full Counter=       128, Cycle Counter=0, Done=0, State(non-pipe)= 8
+Time=             3485000, Full Counter=       129, Cycle Counter=1, Done=0, State(non-pipe)= 9
+Time=             3495000, Full Counter=       130, Cycle Counter=2, Done=0, State(non-pipe)=10
+Time=             3505000, Full Counter=       131, Cycle Counter=3, Done=0, State(non-pipe)=11
+Time=             3515000, Full Counter=       132, Cycle Counter=4, Done=0, State(non-pipe)=12
+Time=             3525000, Full Counter=       133, Cycle Counter=5, Done=0, State(non-pipe)= 1
+Time=             3535000, Full Counter=       134, Cycle Counter=6, Done=0, State(non-pipe)= 2
+Time=             3545000, Full Counter=       135, Cycle Counter=7, Done=0, State(non-pipe)= 3
+Time=             3555000, Full Counter=       136, Cycle Counter=0, Done=0, State(non-pipe)= 4
+Time=             3565000, Full Counter=       137, Cycle Counter=1, Done=0, State(non-pipe)= 5
+Time=             3575000, Full Counter=       138, Cycle Counter=2, Done=0, State(non-pipe)= 6
+Time=             3585000, Full Counter=       139, Cycle Counter=3, Done=0, State(non-pipe)= 7
+Time=             3595000, Full Counter=       140, Cycle Counter=4, Done=0, State(non-pipe)= 8
+Time=             3605000, Full Counter=       141, Cycle Counter=5, Done=0, State(non-pipe)= 9
+Time=             3615000, Full Counter=       142, Cycle Counter=6, Done=0, State(non-pipe)=10
+Time=             3625000, Full Counter=       143, Cycle Counter=7, Done=0, State(non-pipe)=11
+Time=             3635000, Full Counter=       144, Cycle Counter=0, Done=0, State(non-pipe)=12
+Time=             3645000, Full Counter=       145, Cycle Counter=1, Done=0, State(non-pipe)= 1
+Time=             3655000, Full Counter=       146, Cycle Counter=2, Done=0, State(non-pipe)= 2
+Time=             3665000, Full Counter=       147, Cycle Counter=3, Done=0, State(non-pipe)= 3
+Time=             3675000, Full Counter=       148, Cycle Counter=4, Done=0, State(non-pipe)= 4
+Time=             3685000, Full Counter=       149, Cycle Counter=5, Done=0, State(non-pipe)= 5
+Time=             3695000, Full Counter=       150, Cycle Counter=6, Done=0, State(non-pipe)= 6
+Time=             3705000, Full Counter=       151, Cycle Counter=7, Done=0, State(non-pipe)= 7
+Time=             3715000, Full Counter=       152, Cycle Counter=0, Done=0, State(non-pipe)= 8
+Time=             3725000, Full Counter=       153, Cycle Counter=1, Done=0, State(non-pipe)= 9
+Time=             3735000, Full Counter=       154, Cycle Counter=2, Done=0, State(non-pipe)=10
+Time=             3745000, Full Counter=       155, Cycle Counter=3, Done=0, State(non-pipe)=11
+Time=             3755000, Full Counter=       156, Cycle Counter=4, Done=0, State(non-pipe)=12
+Time=             3765000, Full Counter=       157, Cycle Counter=5, Done=0, State(non-pipe)= 1
+Time=             3775000, Full Counter=       158, Cycle Counter=6, Done=0, State(non-pipe)= 2
+Time=             3785000, Full Counter=       159, Cycle Counter=7, Done=0, State(non-pipe)= 3
+Time=             3795000, Full Counter=       160, Cycle Counter=0, Done=0, State(non-pipe)= 4
+Time=             3805000, Full Counter=       161, Cycle Counter=1, Done=0, State(non-pipe)= 5
+Time=             3815000, Full Counter=       162, Cycle Counter=2, Done=0, State(non-pipe)= 6
+Time=             3825000, Full Counter=       163, Cycle Counter=3, Done=0, State(non-pipe)= 7
+Time=             3835000, Full Counter=       164, Cycle Counter=4, Done=0, State(non-pipe)= 8
+Time=             3845000, Full Counter=       165, Cycle Counter=5, Done=0, State(non-pipe)= 9
+Time=             3855000, Full Counter=       166, Cycle Counter=6, Done=0, State(non-pipe)=10
+Time=             3865000, Full Counter=       167, Cycle Counter=7, Done=0, State(non-pipe)=11
+Time=             3875000, Full Counter=       168, Cycle Counter=0, Done=0, State(non-pipe)=12
+Time=             3885000, Full Counter=       169, Cycle Counter=1, Done=0, State(non-pipe)= 1
+Time=             3895000, Full Counter=       170, Cycle Counter=2, Done=0, State(non-pipe)= 2
+Time=             3905000, Full Counter=       171, Cycle Counter=3, Done=0, State(non-pipe)= 3
+Time=             3915000, Full Counter=       172, Cycle Counter=4, Done=0, State(non-pipe)= 4
+Time=             3925000, Full Counter=       173, Cycle Counter=5, Done=0, State(non-pipe)= 5
+Time=             3935000, Full Counter=       174, Cycle Counter=6, Done=0, State(non-pipe)= 6
+Time=             3945000, Full Counter=       175, Cycle Counter=7, Done=0, State(non-pipe)= 7
+Time=             3955000, Full Counter=       176, Cycle Counter=0, Done=0, State(non-pipe)= 8
+Time=             3965000, Full Counter=       177, Cycle Counter=1, Done=0, State(non-pipe)= 9
+Time=             3975000, Full Counter=       178, Cycle Counter=2, Done=0, State(non-pipe)=10
+Time=             3985000, Full Counter=       179, Cycle Counter=3, Done=0, State(non-pipe)=11
+Time=             3995000, Full Counter=       180, Cycle Counter=4, Done=0, State(non-pipe)=12
+Time=             4005000, Full Counter=       181, Cycle Counter=5, Done=0, State(non-pipe)= 1
+Time=             4015000, Full Counter=       182, Cycle Counter=6, Done=0, State(non-pipe)= 2
+Time=             4025000, Full Counter=       183, Cycle Counter=7, Done=0, State(non-pipe)= 3
+Time=             4035000, Full Counter=       184, Cycle Counter=0, Done=0, State(non-pipe)= 4
+Time=             4045000, Full Counter=       185, Cycle Counter=1, Done=0, State(non-pipe)= 5
+Time=             4055000, Full Counter=       186, Cycle Counter=2, Done=0, State(non-pipe)= 6
+Time=             4065000, Full Counter=       187, Cycle Counter=3, Done=0, State(non-pipe)= 7
+Time=             4075000, Full Counter=       188, Cycle Counter=4, Done=0, State(non-pipe)= 8
+Time=             4085000, Full Counter=       189, Cycle Counter=5, Done=0, State(non-pipe)= 9
+Time=             4095000, Full Counter=       190, Cycle Counter=6, Done=0, State(non-pipe)=10
+Time=             4105000, Full Counter=       191, Cycle Counter=7, Done=0, State(non-pipe)=11
+Time=             4115000, Full Counter=       192, Cycle Counter=0, Done=0, State(non-pipe)=12
+Time=             4125000, Full Counter=       193, Cycle Counter=1, Done=0, State(non-pipe)= 1
+Time=             4135000, Full Counter=       194, Cycle Counter=2, Done=0, State(non-pipe)= 2
+Time=             4145000, Full Counter=       195, Cycle Counter=3, Done=0, State(non-pipe)= 3
+Time=             4155000, Full Counter=       196, Cycle Counter=4, Done=0, State(non-pipe)= 4
+Time=             4165000, Full Counter=       197, Cycle Counter=5, Done=0, State(non-pipe)= 5
+Time=             4175000, Full Counter=       198, Cycle Counter=6, Done=0, State(non-pipe)= 6
+Time=             4185000, Full Counter=       199, Cycle Counter=7, Done=0, State(non-pipe)= 7
+Time=             4195000, Full Counter=       200, Cycle Counter=0, Done=0, State(non-pipe)= 8
+Time=             4205000, Full Counter=       201, Cycle Counter=1, Done=0, State(non-pipe)= 9
+Time=             4215000, Full Counter=       202, Cycle Counter=2, Done=0, State(non-pipe)=10
+Time=             4225000, Full Counter=       203, Cycle Counter=3, Done=0, State(non-pipe)=11
+Time=             4235000, Full Counter=       204, Cycle Counter=4, Done=0, State(non-pipe)=12
+Time=             4245000, Full Counter=       205, Cycle Counter=5, Done=0, State(non-pipe)= 1
+Time=             4255000, Full Counter=       206, Cycle Counter=6, Done=0, State(non-pipe)= 2
+Time=             4265000, Full Counter=       207, Cycle Counter=7, Done=0, State(non-pipe)= 3
+Time=             4275000, Full Counter=       208, Cycle Counter=0, Done=0, State(non-pipe)= 4
+Time=             4285000, Full Counter=       209, Cycle Counter=1, Done=0, State(non-pipe)= 5
+Time=             4295000, Full Counter=       210, Cycle Counter=2, Done=0, State(non-pipe)= 6
+Time=             4305000, Full Counter=       211, Cycle Counter=3, Done=0, State(non-pipe)= 7
+Time=             4315000, Full Counter=       212, Cycle Counter=4, Done=0, State(non-pipe)= 8
+Time=             4325000, Full Counter=       213, Cycle Counter=5, Done=0, State(non-pipe)= 9
+Time=             4335000, Full Counter=       214, Cycle Counter=6, Done=0, State(non-pipe)=10
+Time=             4345000, Full Counter=       215, Cycle Counter=7, Done=0, State(non-pipe)=11
+Time=             4355000, Full Counter=       216, Cycle Counter=0, Done=0, State(non-pipe)=12
+Time=             4365000, Full Counter=       217, Cycle Counter=1, Done=0, State(non-pipe)= 1
+Time=             4375000, Full Counter=       218, Cycle Counter=2, Done=0, State(non-pipe)= 2
+Time=             4385000, Full Counter=       219, Cycle Counter=3, Done=0, State(non-pipe)= 3
+Time=             4395000, Full Counter=       220, Cycle Counter=4, Done=0, State(non-pipe)= 4
+Time=             4405000, Full Counter=       221, Cycle Counter=5, Done=0, State(non-pipe)= 5
+Time=             4415000, Full Counter=       222, Cycle Counter=6, Done=0, State(non-pipe)= 6
+Time=             4425000, Full Counter=       223, Cycle Counter=7, Done=0, State(non-pipe)= 7
+Time=             4435000, Full Counter=       224, Cycle Counter=0, Done=0, State(non-pipe)= 8
+Time=             4445000, Full Counter=       225, Cycle Counter=1, Done=0, State(non-pipe)= 9
+Time=             4455000, Full Counter=       226, Cycle Counter=2, Done=0, State(non-pipe)=10
+Time=             4465000, Full Counter=       227, Cycle Counter=3, Done=0, State(non-pipe)=11
+Time=             4475000, Full Counter=       228, Cycle Counter=4, Done=0, State(non-pipe)=12
+Time=             4485000, Full Counter=       229, Cycle Counter=5, Done=0, State(non-pipe)= 1
+Time=             4495000, Full Counter=       230, Cycle Counter=6, Done=0, State(non-pipe)= 2
+Time=             4505000, Full Counter=       231, Cycle Counter=7, Done=0, State(non-pipe)= 3
+Time=             4515000, Full Counter=       232, Cycle Counter=0, Done=0, State(non-pipe)= 4
+Time=             4525000, Full Counter=       233, Cycle Counter=1, Done=0, State(non-pipe)= 5
+Time=             4535000, Full Counter=       234, Cycle Counter=2, Done=0, State(non-pipe)= 6
+Time=             4545000, Full Counter=       235, Cycle Counter=3, Done=0, State(non-pipe)= 7
+Time=             4555000, Full Counter=       236, Cycle Counter=4, Done=0, State(non-pipe)= 8
+Time=             4565000, Full Counter=       237, Cycle Counter=5, Done=0, State(non-pipe)= 9
+Time=             4575000, Full Counter=       238, Cycle Counter=6, Done=0, State(non-pipe)=10
+Time=             4585000, Full Counter=       239, Cycle Counter=7, Done=0, State(non-pipe)=11
+Time=             4595000, Full Counter=       240, Cycle Counter=0, Done=0, State(non-pipe)=12
+Non-pipelined execution completed in        241 cycles
+Memory contents from   32 to   41:
+Time=             4605000, Full Counter=       241, Cycle Counter=1, Done=1, State(non-pipe)= 0
+mem[         32] =  -29
+mem[         33] =    2
+mem[         34] =    5
+mem[         35] =    7
+mem[         36] =    7
+mem[         37] =    7
+mem[         38] =    7
+mem[         39] =    7
+mem[         40] =    7
+mem[         41] =    7
+Saving non-pipelined filter results...
+Starting pipelined test at time              4915000
+
+Starting pipelined FIR filter test...
+Time=             4915000, Full Counter=         0, Cycle Counter=0, Done=0, State(non-pipe)= 0
+Time=             4925000, Full Counter=         1, Cycle Counter=1, Done=0, State(non-pipe)= 0
+Time=             4935000, Full Counter=         2, Cycle Counter=2, Done=0, State(non-pipe)= 0
+Time=             4945000, Full Counter=         3, Cycle Counter=3, Done=0, State(non-pipe)= 0
+Time=             4955000, Full Counter=         4, Cycle Counter=4, Done=0, State(non-pipe)= 0
+Time=             4965000, Full Counter=         5, Cycle Counter=5, Done=0, State(non-pipe)= 0
+Time=             4975000, Full Counter=         6, Cycle Counter=6, Done=0, State(non-pipe)= 0
+Time=             4985000, Full Counter=         7, Cycle Counter=7, Done=0, State(non-pipe)= 0
+Time=             4995000, Full Counter=         8, Cycle Counter=0, Done=0, State(non-pipe)= 0
+Time=             5005000, Full Counter=         9, Cycle Counter=1, Done=0, State(non-pipe)= 0
+Time=             5015000, Full Counter=        10, Cycle Counter=2, Done=0, State(non-pipe)= 0
+Time=             5025000, Full Counter=        11, Cycle Counter=3, Done=0, State(non-pipe)= 0
+Time=             5035000, Full Counter=        12, Cycle Counter=4, Done=0, State(non-pipe)= 0
+Time=             5045000, Full Counter=        13, Cycle Counter=5, Done=0, State(non-pipe)= 0
+Time=             5055000, Full Counter=        14, Cycle Counter=6, Done=0, State(non-pipe)= 0
+Time=             5065000, Full Counter=        15, Cycle Counter=7, Done=0, State(non-pipe)= 0
+Time=             5075000, Full Counter=        16, Cycle Counter=0, Done=0, State(non-pipe)= 0
+Time=             5085000, Full Counter=        17, Cycle Counter=1, Done=0, State(non-pipe)= 0
+Time=             5095000, Full Counter=        18, Cycle Counter=2, Done=0, State(non-pipe)= 0
+Time=             5105000, Full Counter=        19, Cycle Counter=3, Done=0, State(non-pipe)= 0
+Time=             5115000, Full Counter=        20, Cycle Counter=4, Done=0, State(non-pipe)= 0
+Time=             5125000, Full Counter=        21, Cycle Counter=5, Done=0, State(non-pipe)= 0
+Time=             5135000, Full Counter=        22, Cycle Counter=6, Done=0, State(non-pipe)= 0
+Time=             5145000, Full Counter=        23, Cycle Counter=7, Done=0, State(non-pipe)= 0
+Time=             5155000, Full Counter=        24, Cycle Counter=0, Done=0, State(non-pipe)= 0
+Time=             5165000, Full Counter=        25, Cycle Counter=1, Done=0, State(non-pipe)= 0
+Pipelined execution completed in         26 cycles
+Memory contents from   32 to   41:
+Time=             5175000, Full Counter=        26, Cycle Counter=2, Done=1, State(non-pipe)= 0
+mem[         32] =  -29
+mem[         33] =   -1
+mem[         34] =   -1
+mem[         35] =   -1
+mem[         36] =   -1
+mem[         37] =   -1
+mem[         38] =   -1
+mem[         39] =    0
+mem[         40] =    0
+mem[         41] =    0
+
+Performance comparison:
+Non-pipelined:        241 cycles
+Pipelined:         26 cycles
+Speedup: 9.27 x
+Comparing output results...
+Mismatch at sample           0: Non-pipelined=   0, Pipelined=  -1
+Mismatch at sample           1: Non-pipelined=   2, Pipelined=  -1
+Mismatch at sample           2: Non-pipelined=   5, Pipelined=  -1
+Mismatch at sample           3: Non-pipelined=   7, Pipelined=  -1
+Mismatch at sample           4: Non-pipelined=   7, Pipelined=  -1
+
+Test complete
+$finish called at time : 5475 ns : File "/home/tnoble/git/CECS_460_Group_1/project_4/testbench/fir_tb.v" Line 261
+INFO: [USF-XSim-96] XSim completed. Design snapshot 'fir_tb_behav' loaded.
+INFO: [USF-XSim-97] XSim simulation ran for 100000ns
+launch_simulation: Time (s): cpu = 00:00:06 ; elapsed = 00:00:05 . Memory (MB): peak = 8345.969 ; gain = 0.000 ; free physical = 4371 ; free virtual = 8619
+
