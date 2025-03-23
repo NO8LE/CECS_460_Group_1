@@ -11,7 +11,10 @@ module fir_waveform_tb();
     
     // Output signals
     wire done;
-    wire [31:0] cycle_count;
+    wire [2:0] cycle_count;  // Now only 3 bits
+    
+    // Internal cycle counter for performance measurement
+    reg [31:0] cycle_counter = 0;
     
     // FIR top instance
     fir_top dut (
@@ -26,18 +29,27 @@ module fir_waveform_tb();
     // Generate clock
     always #5 clk = ~clk;  // 100 MHz clock
     
+    // Track cycles during each test
+    always @(posedge clk) begin
+        if (start) begin
+            cycle_counter <= 0;
+        end else if (!done) begin
+            cycle_counter <= cycle_counter + 1;
+        end
+    end
+    
     // Test signals for waveform analysis
     task run_filter;
         input sel_pipe;
         begin
             sel_pipelined = sel_pipe;
-            #10;
+            #50;  // Longer delay before starting
             start = 1;
-            #10;
+            #100; // Longer start pulse (was 10)
             start = 0;
             wait(done);
             $display("%s implementation completed in %d cycles", 
-                     sel_pipe ? "Pipelined" : "Non-pipelined", cycle_count);
+                     sel_pipe ? "Pipelined" : "Non-pipelined", cycle_counter);
             #50;  // Add some delay for visualization
         end
     endtask
@@ -171,10 +183,10 @@ module fir_waveform_tb();
     // Process to capture performance metrics
     always @(posedge clk) begin
         if (done && sel_pipelined == 0) begin
-            non_pipelined_cycles = cycle_count;
+            non_pipelined_cycles = cycle_counter;
         end
         else if (done && sel_pipelined == 1) begin
-            pipelined_cycles = cycle_count;
+            pipelined_cycles = cycle_counter;
             // Calculate speedup after both runs are complete
             if (non_pipelined_cycles > 0) begin
                 speedup = non_pipelined_cycles * 1.0 / pipelined_cycles;
