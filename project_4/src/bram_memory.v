@@ -19,13 +19,17 @@ module bram_memory (
     // Integer for reset loop
     integer i;
     
-    // Port A (synchronous read/write with reset)
+    // Memory initialization (for simulation only)
+    // For synthesis, the memory will be initialized by the initial writes from the testbench
+    initial begin
+        for (i = 0; i < 1024; i = i + 1) begin
+            mem[i] = 8'b0;
+        end
+    end
+    
+    // Port A (synchronous read/write)
     always @(posedge clk) begin
         if (rst) begin
-            // Only reset half the memory from port A
-            for (i = 0; i < 512; i = i + 1) begin
-                mem[i] <= 8'b0;
-            end
             data_out_a <= 8'b0;
         end else begin
             if (we_a) begin
@@ -35,13 +39,9 @@ module bram_memory (
         end
     end
     
-    // Port B (synchronous read/write with reset)
+    // Port B (synchronous read/write)
     always @(posedge clk) begin
         if (rst) begin
-            // Reset the other half of memory from port B
-            for (i = 512; i < 1024; i = i + 1) begin
-                mem[i] <= 8'b0;
-            end
             data_out_b <= 8'b0;
         end else begin
             if (we_b) begin
