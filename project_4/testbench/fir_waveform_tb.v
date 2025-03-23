@@ -142,12 +142,7 @@ module fir_waveform_tb();
     wire signed [7:0] pipe_x3_s1 = dut.pipelined_filter.x3_s1;
     wire signed [7:0] pipe_x4_s1 = dut.pipelined_filter.x4_s1;
     
-    // Stage 2 pipeline registers
-    wire signed [15:0] pipe_mac0_s2 = dut.pipelined_filter.mac0_s2;
-    wire signed [15:0] pipe_mac1_s2 = dut.pipelined_filter.mac1_s2;
-    wire signed [15:0] pipe_mac2_s2 = dut.pipelined_filter.mac2_s2;
-    wire signed [15:0] pipe_mac3_s2 = dut.pipelined_filter.mac3_s2;
-    wire signed [15:0] pipe_mac4_s2 = dut.pipelined_filter.mac4_s2;
+    // Stage 2 pipeline registers - direct sum accumulation
     wire signed [15:0] pipe_sum_s2 = dut.pipelined_filter.sum_s2;
     
     // Stage 3 pipeline registers

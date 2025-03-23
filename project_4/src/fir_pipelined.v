@@ -43,8 +43,7 @@ module fir_pipelined (
     // Stage 1: Sample read and buffer shift
     reg signed [7:0] x0_s1, x1_s1, x2_s1, x3_s1, x4_s1;
     
-    // Stage 2: Multiply-accumulate operations
-    reg signed [15:0] mac0_s2, mac1_s2, mac2_s2, mac3_s2, mac4_s2;
+    // Stage 2: Accumulation result
     reg signed [15:0] sum_s2;
     
     // Stage 3: Output to memory
@@ -198,20 +197,8 @@ module fir_pipelined (
     // Pipeline Stage 2: Multiply-accumulate operations
     always @(posedge clk) begin
         if (rst) begin
-            mac0_s2 <= 16'd0;
-            mac1_s2 <= 16'd0;
-            mac2_s2 <= 16'd0;
-            mac3_s2 <= 16'd0;
-            mac4_s2 <= 16'd0;
             sum_s2 <= 16'd0;
         end else begin
-            // Parallel multiply operations
-            mac0_s2 <= x0_s1 * h0;
-            mac1_s2 <= x1_s1 * h1;
-            mac2_s2 <= x2_s1 * h2;
-            mac3_s2 <= x3_s1 * h3;
-            mac4_s2 <= x4_s1 * h4;
-            
             // Accumulate all products directly from multiplications to avoid timing issues
             sum_s2 <= (x0_s1 * h0) + (x1_s1 * h1) + (x2_s1 * h2) + (x3_s1 * h3) + (x4_s1 * h4);
         end
