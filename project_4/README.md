@@ -118,9 +118,9 @@ For proper Block RAM (BRAM) inference in Vivado synthesis:
 
 To resolve "[Vivado 12-13277] Compiled library path does not exist" warnings:
 
-1. Run the provided `compile_sim_libs.tcl` script in Vivado Tcl Console:
+1. Run the provided `compile_xilinx_libs.tcl` script in Vivado Tcl Console:
    ```tcl
-   source compile_sim_libs.tcl
+   source compile_xilinx_libs.tcl
    ```
 2. This script will:
    - Create a local directory for compiled simulation libraries
