@@ -49,8 +49,8 @@ module fir_pipelined (
     
     // Stage 3: Output to memory
     reg signed [7:0] result_s3;
-    reg [9:0] output_addr_s3;
     reg output_valid_s3;
+    // Removed unused output_addr_s3 register
     
     // Pipeline control signals
     reg pipeline_active;
@@ -221,7 +221,6 @@ module fir_pipelined (
     always @(posedge clk) begin
         if (rst) begin
             result_s3 <= 8'd0;
-            output_addr_s3 <= 10'd0;
             output_valid_s3 <= 1'b0;
         end else begin
             // Take most significant bits of the accumulator result for output

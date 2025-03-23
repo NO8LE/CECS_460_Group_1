@@ -45,7 +45,11 @@ module fir_non_pipelined (
     // Processing registers
     reg [9:0] current_sample;            // Index of the current sample being processed
     reg signed [15:0] accumulator;       // 16-bit for handling multiplication growth
-    reg signed [7:0] x0, x1, x2, x3, x4; // Sample buffer
+    // Note: We don't need to store the sample values in registers since we only use them once
+    wire signed [7:0] current_sample_value; // Current sample from memory
+    
+    // Assign the current sample value from memory output
+    assign current_sample_value = mem_data_out_a;
     
     // State machine
     always @(posedge clk or posedge rst) begin
@@ -152,11 +156,6 @@ module fir_non_pipelined (
         if (rst) begin
             current_sample <= 10'd0;
             accumulator <= 16'd0;
-            x0 <= 8'd0;
-            x1 <= 8'd0;
-            x2 <= 8'd0;
-            x3 <= 8'd0;
-            x4 <= 8'd0;
             done <= 1'b0;
         end else begin
             case (state)
@@ -169,27 +168,27 @@ module fir_non_pipelined (
                 end
                 
                 COMPUTE_X0: begin
-                    x0 <= mem_data_out_a;
+                    // Directly use mem_data_out_a without storing in x0
                     accumulator <= mem_data_out_a * h0;
                 end
                 
                 COMPUTE_X1: begin
-                    x1 <= mem_data_out_a;
+                    // Directly use mem_data_out_a without storing in x1
                     accumulator <= accumulator + mem_data_out_a * h1;
                 end
                 
                 COMPUTE_X2: begin
-                    x2 <= mem_data_out_a;
+                    // Directly use mem_data_out_a without storing in x2
                     accumulator <= accumulator + mem_data_out_a * h2;
                 end
                 
                 COMPUTE_X3: begin
-                    x3 <= mem_data_out_a;
+                    // Directly use mem_data_out_a without storing in x3
                     accumulator <= accumulator + mem_data_out_a * h3;
                 end
                 
                 COMPUTE_X4: begin
-                    x4 <= mem_data_out_a;
+                    // Directly use mem_data_out_a without storing in x4
                     accumulator <= accumulator + mem_data_out_a * h4;
                 end
                 
