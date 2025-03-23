@@ -136,11 +136,8 @@ module fir_waveform_tb();
     wire [3:0] non_pipe_state = dut.non_pipelined_filter.state;
     wire [9:0] non_pipe_current_sample = dut.non_pipelined_filter.current_sample;
     wire signed [15:0] non_pipe_accumulator = dut.non_pipelined_filter.accumulator;
-    wire signed [7:0] non_pipe_x0 = dut.non_pipelined_filter.x0;
-    wire signed [7:0] non_pipe_x1 = dut.non_pipelined_filter.x1;
-    wire signed [7:0] non_pipe_x2 = dut.non_pipelined_filter.x2;
-    wire signed [7:0] non_pipe_x3 = dut.non_pipelined_filter.x3;
-    wire signed [7:0] non_pipe_x4 = dut.non_pipelined_filter.x4;
+    // Use memory input/output instead of removed sample registers
+    wire signed [7:0] non_pipe_mem_out = dut.non_pipelined_filter.mem_data_out_a;
     
     // Pipelined internal signals
     wire [2:0] pipe_state = dut.pipelined_filter.state;
