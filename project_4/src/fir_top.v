@@ -5,16 +5,17 @@ module fir_top (
     input wire rst,
     input wire start,                // Start signal
     input wire sel_pipelined,        // 0: non-pipelined, 1: pipelined
-    input wire [9:0] input_addr,     // Starting address for input samples
-    input wire [9:0] output_addr,    // Starting address for output samples
-    input wire [9:0] sample_count,   // Number of samples to process
     output wire done,                // Processing complete signal
-    output wire [31:0] cycle_count,  // Performance counter
-    
-    // External debug signals (optional)
-    output wire [3:0] non_pipe_state,
-    output wire [2:0] pipe_state
+    output wire [31:0] cycle_count   // Performance counter (only MSBs will be connected)
 );
+    // Default parameters (hardcoded to avoid requiring external pins)
+    localparam [9:0] input_addr = 10'd0;     // Starting address for input samples
+    localparam [9:0] output_addr = 10'd512;  // Starting address for output samples
+    localparam [9:0] sample_count = 10'd100; // Number of samples to process
+
+    // Internal debug signals (not connected to external pins)
+    wire [3:0] non_pipe_state;
+    wire [2:0] pipe_state;
 
     // Internal signals for BRAM interface
     wire [9:0] mem_addr_a_non_pipe, mem_addr_a_pipe;

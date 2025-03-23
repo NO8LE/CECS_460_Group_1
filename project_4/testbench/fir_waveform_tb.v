@@ -8,9 +8,6 @@ module fir_waveform_tb();
     // Control signals
     reg start = 0;
     reg sel_pipelined = 0;
-    reg [9:0] input_addr = 10'd0;
-    reg [9:0] output_addr = 10'd512;
-    reg [9:0] sample_count = 10'd20;  // Use fewer samples for clearer waveforms
     
     // Output signals
     wire done;
@@ -22,13 +19,8 @@ module fir_waveform_tb();
         .rst(rst),
         .start(start),
         .sel_pipelined(sel_pipelined),
-        .input_addr(input_addr),
-        .output_addr(output_addr),
-        .sample_count(sample_count),
         .done(done),
-        .cycle_count(cycle_count),
-        .non_pipe_state(),
-        .pipe_state()
+        .cycle_count(cycle_count)
     );
     
     // Generate clock
@@ -37,10 +29,8 @@ module fir_waveform_tb();
     // Test signals for waveform analysis
     task run_filter;
         input sel_pipe;
-        input [9:0] out_addr;
         begin
             sel_pipelined = sel_pipe;
-            output_addr = out_addr;
             #10;
             start = 1;
             #10;
@@ -118,11 +108,11 @@ module fir_waveform_tb();
         
         // Run non-pipelined first
         $display("Running non-pipelined filter for waveform analysis...");
-        run_filter(0, 10'd512);
+        run_filter(0);
         
         // Run pipelined next
         $display("Running pipelined filter for waveform analysis...");
-        run_filter(1, 10'd600);
+        run_filter(1);
         
         // Add more time for waveform analysis
         #200;

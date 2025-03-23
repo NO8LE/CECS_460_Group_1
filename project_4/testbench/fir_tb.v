@@ -24,14 +24,13 @@ module fir_tb();
         .rst(rst),
         .start(start),
         .sel_pipelined(sel_pipelined),
-        .input_addr(input_addr),
-        .output_addr(output_addr),
-        .sample_count(sample_count),
         .done(done),
-        .cycle_count(cycle_count),
-        .non_pipe_state(non_pipe_state),
-        .pipe_state(pipe_state)
+        .cycle_count(cycle_count)
     );
+    
+    // Access internal signals directly
+    wire [3:0] non_pipe_state = dut.non_pipe_state;
+    wire [2:0] pipe_state = dut.pipe_state;
     
     // Memory access variables for test
     reg [9:0] verify_addr;
@@ -153,23 +152,36 @@ module fir_tb();
         end
     endtask
     
+    // Array to store non-pipelined results for comparison
+    reg [7:0] non_pipelined_results [0:255];
+    
+    // Task to save filter outputs from non-pipelined run
+    task save_non_pipelined_outputs;
+        integer i;
+        begin
+            $display("Saving non-pipelined filter results...");
+            for (i = 0; i < dut.sample_count; i = i + 1) begin
+                non_pipelined_results[i] = dut.memory.mem[dut.output_addr + i];
+            end
+        end
+    endtask
+    
     // Task to compare filter outputs
     task compare_outputs;
         integer i;
-        reg [7:0] output1, output2;
+        reg [7:0] pipelined_output;
         reg mismatch;
         
         begin
             mismatch = 0;
             
             $display("Comparing output results...");
-            for (i = 0; i < sample_count; i = i + 1) begin
-                output1 = dut.memory.mem[output_addr + i];          // Non-pipelined result
-                output2 = dut.memory.mem[output_addr + sample_count + i]; // Pipelined result
+            for (i = 0; i < dut.sample_count; i = i + 1) begin
+                pipelined_output = dut.memory.mem[dut.output_addr + i]; // Pipelined result (overwrote non-pipelined)
                 
-                if (output1 !== output2) begin
+                if (non_pipelined_results[i] !== pipelined_output) begin
                     $display("Mismatch at sample %d: Non-pipelined=%d, Pipelined=%d", 
-                             i, $signed(output1), $signed(output2));
+                             i, $signed(non_pipelined_results[i]), $signed(pipelined_output));
                     mismatch = 1;
                 end
             end
@@ -196,7 +208,7 @@ module fir_tb();
         // Run non-pipelined implementation
         $display("\nStarting non-pipelined FIR filter test...");
         sel_pipelined = 0;  // Select non-pipelined
-        output_addr = 10'd512;  // Store result starting at address 512
+        // Note: output_addr is now hardcoded in fir_top.v as 512
         start = 1;
         #10;
         start = 0;
@@ -206,8 +218,11 @@ module fir_tb();
         non_pipelined_cycles = cycle_count;
         $display("Non-pipelined execution completed in %d cycles", non_pipelined_cycles);
         
-        // Display a few output samples
-        display_memory_range(output_addr, output_addr + 9);
+        // Display a few output samples - use the hardcoded output_addr = 512
+        display_memory_range(10'd512, 10'd512 + 9);
+        
+        // Save non-pipelined results for comparison
+        save_non_pipelined_outputs();
         
         // Wait between tests
         #20;
@@ -215,7 +230,7 @@ module fir_tb();
         // Run pipelined implementation
         $display("\nStarting pipelined FIR filter test...");
         sel_pipelined = 1;  // Select pipelined
-        output_addr = 10'd612;  // Store result at a different location
+        // Note: output is now written to the same location (512) for both implementations
         start = 1;
         #10;
         start = 0;
