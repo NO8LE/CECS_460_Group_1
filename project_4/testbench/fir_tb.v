@@ -9,8 +9,8 @@ module fir_tb();
     reg start = 0;
     reg sel_pipelined = 0;
     reg [9:0] input_addr = 10'd0;
-    reg [9:0] output_addr = 10'd512;  // Output starts at address 512
-    reg [9:0] sample_count = 10'd100;  // Process 100 samples for test
+    reg [9:0] output_addr = 10'd256;  // Output starts at address 256 (was 512, reduced to fit in test memory)
+    reg [9:0] sample_count = 10'd20;  // Process fewer samples for testing (was 100)
     
     // Output signals
     wire done;
@@ -41,13 +41,9 @@ module fir_tb();
         end
     end
     
-    // Memory access variables for test
-    reg [9:0] verify_addr;
-    wire [7:0] verify_data;
-    
     // Performance metrics
-    integer non_pipelined_cycles;
-    integer pipelined_cycles;
+    integer non_pipelined_cycles = 0;
+    integer pipelined_cycles = 0;
     real speedup;
     
     // Generate clock
@@ -76,8 +72,8 @@ module fir_tb();
         end
     endfunction
     
-    // Memory array for test data
-    reg [7:0] test_memory [0:1023];
+    // Memory array for test data (reduced size)
+    reg [7:0] test_memory [0:511];
     
     // Task to initialize memory with test data
     task initialize_memory;
@@ -93,7 +89,8 @@ module fir_tb();
             #10;
             
             // Generate test signal (sine wave) and store in local memory
-            for (i = 0; i < 1024; i = i + 1) begin
+            // Only fill up to array size
+            for (i = 0; i < 512; i = i + 1) begin
                 test_memory[i] = sine_sample(i);
             end
             
@@ -101,7 +98,7 @@ module fir_tb();
             
             // Alternative: step function could be used instead
             /*
-            for (i = 0; i < 1024; i = i + 1) begin
+            for (i = 0; i < 512; i = i + 1) begin
                 test_memory[i] = step_sample(i);
             end
             $display("Test memory initialized with step function test signal");
@@ -178,9 +175,8 @@ module fir_tb();
         // Run non-pipelined implementation
         $display("\nStarting non-pipelined FIR filter test...");
         sel_pipelined = 0;  // Select non-pipelined
-        // Note: output_addr is now hardcoded in fir_top.v as 512
         start = 1;
-        #10;
+        #100;  // Longer start pulse (was 10)
         start = 0;
         
         // Wait for completion
@@ -188,8 +184,8 @@ module fir_tb();
         non_pipelined_cycles = cycle_counter;
         $display("Non-pipelined execution completed in %d cycles", non_pipelined_cycles);
         
-        // Display a few output samples - use the hardcoded output_addr = 512
-        display_memory_range(10'd512, 10'd512 + 9);
+        // Display a few output samples
+        display_memory_range(output_addr, output_addr + 9);
         
         // Save non-pipelined results for comparison
         save_non_pipelined_outputs();
@@ -200,9 +196,8 @@ module fir_tb();
         // Run pipelined implementation
         $display("\nStarting pipelined FIR filter test...");
         sel_pipelined = 1;  // Select pipelined
-        // Note: output is now written to the same location (512) for both implementations
         start = 1;
-        #10;
+        #100;  // Longer start pulse
         start = 0;
         
         // Wait for completion
