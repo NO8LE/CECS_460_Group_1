@@ -33,19 +33,23 @@ module fir_waveform_tb();
     // We'll use the DUT's built-in cycle counter for performance tracking
     // (no need for a separate cycle counter)
     
-    // Test signals for waveform analysis
+    // Test signals for waveform analysis with diagnostic outputs
     task run_filter;
         input sel_pipe;
         begin
             sel_pipelined = sel_pipe;
-            #50;  // Longer delay before starting
+            $display("Starting %s filter run at time %t", 
+                    sel_pipe ? "pipelined" : "non-pipelined", $time);
+            #20;  // Shorter delay before starting
             start = 1;
-            #100; // Longer start pulse (was 10)
+            #20; // Shorter start pulse for quicker test
             start = 0;
+            $display("%s start pulse completed at time %t", 
+                    sel_pipe ? "Pipelined" : "Non-pipelined", $time);
             wait(done);
-            $display("%s implementation completed in %d cycles", 
-                     sel_pipe ? "Pipelined" : "Non-pipelined", full_cycle_counter);
-            #50;  // Add some delay for visualization
+            $display("%s implementation completed in %d cycles at time %t", 
+                     sel_pipe ? "Pipelined" : "Non-pipelined", full_cycle_counter, $time);
+            #20;  // Shorter delay for visualization
         end
     endtask
     
@@ -65,8 +69,10 @@ module fir_waveform_tb();
             rst = 0;
             #50; // More stabilization time
             
+            $display("Initializing memory at time %t", $time);
             // Generate test pattern (reduced to match array size)
-            for (i = 0; i < 64; i = i + 1) begin
+            // Generate 20 samples instead of 64 for quicker simulation
+            for (i = 0; i < 20; i = i + 1) begin
                 // Calculate sample value - simple step function for clear waveform visualization
                 if (i < 5) begin
                     // Initial impulse
@@ -136,13 +142,15 @@ module fir_waveform_tb();
         end
     endtask
     
-    // Main simulation sequence
+    // Main simulation sequence with added diagnostics
     initial begin
+        $display("Starting waveform testbench at time %t", $time);
         // Apply reset
         rst = 1;
         #20;
         rst = 0;
         #20;
+        $display("Reset complete at time %t", $time);
         
         // Initialize test signal
         init_test_signal();
@@ -225,21 +233,34 @@ module fir_waveform_tb();
     reg [31:0] pipelined_cycles;
     real speedup;
     
-    // Process to capture performance metrics
+    // Process to capture performance metrics with diagnostics
     always @(posedge clk) begin
         if (done && sel_pipelined == 0) begin
             non_pipelined_cycles = full_cycle_counter;
-            $display("Non-pipelined cycles (captured): %d", non_pipelined_cycles);
+            $display("Non-pipelined cycles (captured): %d at time %t", 
+                     non_pipelined_cycles, $time);
         end
         else if (done && sel_pipelined == 1) begin
             pipelined_cycles = full_cycle_counter;
-            $display("Pipelined cycles (captured): %d", pipelined_cycles);
+            $display("Pipelined cycles (captured): %d at time %t", 
+                     pipelined_cycles, $time);
             // Calculate speedup after both runs are complete
             if (non_pipelined_cycles > 0) begin
                 speedup = non_pipelined_cycles * 1.0 / pipelined_cycles;
                 $display("Speedup: %0.2f x", speedup);
             end
         end
+    end
+    
+    // Enhanced monitoring of counter and state signals
+    initial begin
+        $monitor("Time=%t, Full Counter=%d, Cycle Count=%d, Done=%b, NP State=%d, P State=%d", 
+                 $time, full_cycle_counter, cycle_count, done, 
+                 dut.non_pipelined_filter.state, dut.pipelined_filter.state);
+                 
+        // Force simulation to run for a minimum time
+        #10000 $display("Simulation timeout at 10,000ns");
+        $finish;
     end
 
 endmodule

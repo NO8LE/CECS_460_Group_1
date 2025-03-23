@@ -115,14 +115,23 @@ module fir_top (
         end
     end
     
-    // Performance counter
+    // Start edge detector for cycle counter reset
+    reg start_prev;
+    always @(posedge clk or posedge rst) begin
+        if (rst)
+            start_prev <= 1'b0;
+        else
+            start_prev <= start;
+    end
+    
+    // Performance counter with edge detection for start
     always @(posedge clk or posedge rst) begin
         if (rst) begin
             cycle_counter <= 32'd0;
             counting <= 1'b0;
         end else begin
-            if (start) begin
-                // Reset counter when starting
+            if (start && !start_prev) begin
+                // Reset counter only on rising edge of start
                 cycle_counter <= 32'd0;
                 counting <= 1'b1;
             end else if (done) begin

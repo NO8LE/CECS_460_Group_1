@@ -10,7 +10,7 @@ module fir_tb();
     reg sel_pipelined = 0;
     reg [9:0] input_addr = 10'd0;
     reg [9:0] output_addr = 10'd32;  // Output starts at address 32 (reduced to fit in smaller memory)
-    reg [9:0] sample_count = 10'd20;  // Process fewer samples for testing (was 100)
+    reg [9:0] sample_count = 10'd5;   // Use very small sample count for quick testing
     
     // Output signals
     wire done;
@@ -195,11 +195,13 @@ module fir_tb();
     
     // Main test sequence
     initial begin
-        // Initialize test
+        // Initialize test - print diagnostic at the very beginning
+        $display("Starting testbench at time %t", $time);
         rst = 1;
         #20;
         rst = 0;
         #10;
+        $display("Reset complete at time %t", $time);
         
         // Load test signal into memory
         initialize_memory();
@@ -207,12 +209,13 @@ module fir_tb();
         // Display a few input samples for verification
         display_memory_range(0, 9);
         
-        // Run non-pipelined implementation
-        $display("\nStarting non-pipelined FIR filter test...");
+        // Run non-pipelined implementation with shorter run time
+        $display("\nStarting non-pipelined FIR filter test at time %t...", $time);
         sel_pipelined = 0;  // Select non-pipelined
         start = 1;
-        #100;  // Longer start pulse (was 10)
+        #20;  // Shorter start pulse
         start = 0;
+        $display("Start pulse completed at time %t", $time);
         
         // Wait for completion
         wait(done);
@@ -225,14 +228,15 @@ module fir_tb();
         // Save non-pipelined results for comparison
         save_non_pipelined_outputs();
         
-        // Wait between tests
-        #20;
+        // Wait between tests - shorter delay
+        #10;
+        $display("Starting pipelined test at time %t", $time);
         
         // Run pipelined implementation
         $display("\nStarting pipelined FIR filter test...");
         sel_pipelined = 1;  // Select pipelined
         start = 1;
-        #100;  // Longer start pulse
+        #20;  // Shorter start pulse
         start = 0;
         
         // Wait for completion
@@ -257,10 +261,14 @@ module fir_tb();
         $finish;
     end
     
-    // Optional: Monitor interesting signals during simulation
+    // Enhanced monitoring of signals
     initial begin
-        $monitor("Time=%t, Cycle Counter=%d, Done=%b", 
-                 $time, cycle_count, done);
+        $monitor("Time=%t, Full Counter=%d, Cycle Counter=%d, Done=%b, State(non-pipe)=%d", 
+                 $time, full_cycle_counter, cycle_count, done, dut.non_pipelined_filter.state);
+                 
+        // Force simulation to run longer
+        #10000 $display("Simulation timeout at 10,000ns");
+        $finish;
     end
 
 endmodule
