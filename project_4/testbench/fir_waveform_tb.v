@@ -13,7 +13,9 @@ module fir_waveform_tb();
     wire done;
     wire [2:0] cycle_count;  // Now only 3 bits
     
-    // No local performance counter needed - we use DUT's counter
+    // Access the full 32-bit cycle counter inside the DUT
+    wire [31:0] full_cycle_counter;
+    assign full_cycle_counter = dut.cycle_counter;
     
     // FIR top instance
     fir_top dut (
@@ -42,7 +44,7 @@ module fir_waveform_tb();
             start = 0;
             wait(done);
             $display("%s implementation completed in %d cycles", 
-                     sel_pipe ? "Pipelined" : "Non-pipelined", cycle_count);
+                     sel_pipe ? "Pipelined" : "Non-pipelined", full_cycle_counter);
             #50;  // Add some delay for visualization
         end
     endtask
@@ -218,21 +220,24 @@ module fir_waveform_tb();
         read_memory_value(verify_addr, verify_data);
     end
     
-    // Performance metrics (reduced size)
-    reg [7:0] non_pipelined_cycles;
-    reg [7:0] pipelined_cycles;
+    // Performance metrics
+    reg [31:0] non_pipelined_cycles;
+    reg [31:0] pipelined_cycles;
     real speedup;
     
     // Process to capture performance metrics
     always @(posedge clk) begin
         if (done && sel_pipelined == 0) begin
-            non_pipelined_cycles = cycle_count;
+            non_pipelined_cycles = full_cycle_counter;
+            $display("Non-pipelined cycles (captured): %d", non_pipelined_cycles);
         end
         else if (done && sel_pipelined == 1) begin
-            pipelined_cycles = cycle_count;
+            pipelined_cycles = full_cycle_counter;
+            $display("Pipelined cycles (captured): %d", pipelined_cycles);
             // Calculate speedup after both runs are complete
             if (non_pipelined_cycles > 0) begin
                 speedup = non_pipelined_cycles * 1.0 / pipelined_cycles;
+                $display("Speedup: %0.2f x", speedup);
             end
         end
     end

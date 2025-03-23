@@ -16,7 +16,9 @@ module fir_tb();
     wire done;
     wire [2:0] cycle_count;      // Now only 3 bits
     
-    // No local performance counter needed - we use DUT's counter
+    // Access the full 32-bit cycle counter inside the DUT
+    wire [31:0] full_cycle_counter;
+    assign full_cycle_counter = dut.cycle_counter;
     
     // Instantiate the top module
     fir_top dut (
@@ -33,8 +35,8 @@ module fir_tb();
     // We'll access the full 32-bit counter directly from the DUT
     
     // Performance metrics
-    reg [7:0] non_pipelined_cycles = 0;  // 8-bit counters for smaller & reasonable size
-    reg [7:0] pipelined_cycles = 0;
+    reg [31:0] non_pipelined_cycles = 0;  // Expanded to hold full counter value
+    reg [31:0] pipelined_cycles = 0;
     real speedup;
     
     // Generate clock
@@ -214,7 +216,7 @@ module fir_tb();
         
         // Wait for completion
         wait(done);
-        non_pipelined_cycles = cycle_count; // Use the exposed cycle count port instead
+        non_pipelined_cycles = full_cycle_counter; // Use the full 32-bit counter
         $display("Non-pipelined execution completed in %d cycles", non_pipelined_cycles);
         
         // Display a few output samples
@@ -235,7 +237,7 @@ module fir_tb();
         
         // Wait for completion
         wait(done);
-        pipelined_cycles = cycle_count; // Use the exposed cycle count port instead
+        pipelined_cycles = full_cycle_counter; // Use the full 32-bit counter
         $display("Pipelined execution completed in %d cycles", pipelined_cycles);
         
         // Display a few output samples
