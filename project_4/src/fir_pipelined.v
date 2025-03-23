@@ -212,8 +212,8 @@ module fir_pipelined (
             mac3_s2 <= x3_s1 * h3;
             mac4_s2 <= x4_s1 * h4;
             
-            // Accumulate all products
-            sum_s2 <= mac0_s2 + mac1_s2 + mac2_s2 + mac3_s2 + mac4_s2;
+            // Accumulate all products directly from multiplications to avoid timing issues
+            sum_s2 <= (x0_s1 * h0) + (x1_s1 * h1) + (x2_s1 * h2) + (x3_s1 * h3) + (x4_s1 * h4);
         end
     end
     

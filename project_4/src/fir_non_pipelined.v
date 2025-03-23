@@ -167,29 +167,41 @@ module fir_non_pipelined (
                     end
                 end
                 
-                COMPUTE_X0: begin
-                    // Directly use mem_data_out_a without storing in x0
-                    accumulator <= mem_data_out_a * h0;
-                end
-                
-                COMPUTE_X1: begin
-                    // Directly use mem_data_out_a without storing in x1
+            COMPUTE_X0: begin
+                // Directly use mem_data_out_a without storing in x0
+                accumulator <= mem_data_out_a * h0;
+            end
+            
+            COMPUTE_X1: begin
+                // Directly use mem_data_out_a without storing in x1
+                // If current_sample is 0, we're at the first sample, so x[n-1] doesn't exist
+                if (current_sample >= 1) begin
                     accumulator <= accumulator + mem_data_out_a * h1;
                 end
-                
-                COMPUTE_X2: begin
-                    // Directly use mem_data_out_a without storing in x2
+            end
+            
+            COMPUTE_X2: begin
+                // Directly use mem_data_out_a without storing in x2
+                // If current_sample < 2, x[n-2] doesn't exist
+                if (current_sample >= 2) begin
                     accumulator <= accumulator + mem_data_out_a * h2;
                 end
-                
-                COMPUTE_X3: begin
-                    // Directly use mem_data_out_a without storing in x3
+            end
+            
+            COMPUTE_X3: begin
+                // Directly use mem_data_out_a without storing in x3
+                // If current_sample < 3, x[n-3] doesn't exist
+                if (current_sample >= 3) begin
                     accumulator <= accumulator + mem_data_out_a * h3;
                 end
-                
-                COMPUTE_X4: begin
-                    // Directly use mem_data_out_a without storing in x4
+            end
+            
+            COMPUTE_X4: begin
+                // Directly use mem_data_out_a without storing in x4
+                // If current_sample < 4, x[n-4] doesn't exist
+                if (current_sample >= 4) begin
                     accumulator <= accumulator + mem_data_out_a * h4;
+                end
                 end
                 
                 CHECK_DONE: begin

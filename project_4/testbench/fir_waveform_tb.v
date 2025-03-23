@@ -170,5 +170,31 @@ module fir_waveform_tb();
     wire [7:0] mem_data_out_a = dut.mem_data_out_a;
     wire [7:0] mem_data_in_b = dut.mem_data_in_b;
     wire mem_we_b = dut.mem_we_b;
+    
+    // Variables for verification - ensure they're connected
+    reg [9:0] verify_addr;
+    wire [7:0] verify_data;
+    
+    // Connect verify_data to memory output
+    assign verify_data = dut.memory.mem[verify_addr];
+    
+    // Performance metrics
+    reg [31:0] non_pipelined_cycles;
+    reg [31:0] pipelined_cycles;
+    real speedup;
+    
+    // Process to capture performance metrics
+    always @(posedge clk) begin
+        if (done && sel_pipelined == 0) begin
+            non_pipelined_cycles = cycle_count;
+        end
+        else if (done && sel_pipelined == 1) begin
+            pipelined_cycles = cycle_count;
+            // Calculate speedup after both runs are complete
+            if (non_pipelined_cycles > 0) begin
+                speedup = non_pipelined_cycles * 1.0 / pipelined_cycles;
+            end
+        end
+    end
 
 endmodule
