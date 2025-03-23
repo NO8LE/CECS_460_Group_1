@@ -96,7 +96,54 @@ To implement on the Zybo Z7-10:
 
 ## Performance Measurement
 
-The top module includes a cycle counter that measures processing time for each implementation. This counter starts when the `start` signal is asserted and stops when the `done` signal is asserted. The final count is available on the `cycle_count` output.
+The top module includes a cycle counter that measures processing time for each implementation. This counter starts when the `start` signal is asserted and stops when the `done` signal is asserted. The final count is available on the `cycle_count` output. Note that only 3 bits of the internal 32-bit counter are connected to FPGA outputs to conserve I/O pins.
+
+## Troubleshooting and Implementation Notes
+
+### BRAM Inference
+
+For proper Block RAM (BRAM) inference in Vivado synthesis:
+
+1. The memory module uses Xilinx-specific attributes:
+   ```verilog
+   (* ram_style = "block" *) reg [7:0] mem [0:1023];
+   ```
+
+2. Registered read pattern is implemented, which is required for Xilinx BRAM inference:
+   - Address signals are registered
+   - Read operations use the registered address
+   - This ensures proper hardware implementation
+
+### Compilation of Simulation Libraries
+
+To resolve "[Vivado 12-13277] Compiled library path does not exist" warnings:
+
+1. Run the provided `compile_sim_libs.tcl` script in Vivado Tcl Console:
+   ```tcl
+   source compile_sim_libs.tcl
+   ```
+2. This script will:
+   - Create a local directory for compiled simulation libraries
+   - Compile necessary libraries for your simulator
+   - Configure your project to use these libraries
+
+This is a one-time setup that creates proper simulation libraries for your environment.
+
+### Memory Initialization in Testbenches
+
+The testbenches include special handling for memory initialization:
+
+1. A three-cycle approach accounts for registered reads in the BRAM:
+   - First cycle: Set up address and data signals
+   - Second cycle: Write data and register address
+   - Third cycle: Ensure proper read completion
+
+2. Custom signal forcing is used to directly initialize the BRAM memory in the DUT:
+   ```verilog
+   force dut.memory.addr_a = addr_a;
+   force dut.memory.we_a = we_a;
+   force dut.memory.data_in_a = data_in_a;
+   ```
 
 ## Waveform Analysis
 
