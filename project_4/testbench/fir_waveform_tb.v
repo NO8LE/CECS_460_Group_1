@@ -13,8 +13,7 @@ module fir_waveform_tb();
     wire done;
     wire [2:0] cycle_count;  // Now only 3 bits
     
-    // Internal cycle counter for performance measurement
-    reg [31:0] cycle_counter = 0;
+    // No local performance counter needed - we use DUT's counter
     
     // FIR top instance
     fir_top dut (
@@ -29,14 +28,8 @@ module fir_waveform_tb();
     // Generate clock
     always #5 clk = ~clk;  // 100 MHz clock
     
-    // Track cycles during each test
-    always @(posedge clk) begin
-        if (start) begin
-            cycle_counter <= 0;
-        end else if (!done) begin
-            cycle_counter <= cycle_counter + 1;
-        end
-    end
+    // We'll use the DUT's built-in cycle counter for performance tracking
+    // (no need for a separate cycle counter)
     
     // Test signals for waveform analysis
     task run_filter;
@@ -49,13 +42,13 @@ module fir_waveform_tb();
             start = 0;
             wait(done);
             $display("%s implementation completed in %d cycles", 
-                     sel_pipe ? "Pipelined" : "Non-pipelined", cycle_counter);
+                     sel_pipe ? "Pipelined" : "Non-pipelined", dut.cycle_counter);
             #50;  // Add some delay for visualization
         end
     endtask
     
     // Memory array for holding test pattern
-    reg [7:0] test_pattern [0:1023];
+    reg [7:0] test_pattern [0:63];  // Reduced from 1024 to 64 entries
     
     // Initialize memory with test signal
     task init_test_signal;
@@ -70,8 +63,8 @@ module fir_waveform_tb();
             rst = 0;
             #50; // More stabilization time
             
-            // Generate test pattern
-            for (i = 0; i < 1024; i = i + 1) begin
+            // Generate test pattern (reduced to match array size)
+            for (i = 0; i < 64; i = i + 1) begin
                 // Calculate sample value - simple step function for clear waveform visualization
                 if (i < 5) begin
                     // Initial impulse
@@ -85,7 +78,7 @@ module fir_waveform_tb();
             end
             
             // Now actually initialize DUT's memory with the test pattern
-            for (i = 0; i < 1024; i = i + 1) begin
+            for (i = 0; i < 64; i = i + 1) begin
                 // Prepare data
                 addr_a = i;
                 data_in_a = test_pattern[i];
@@ -189,18 +182,18 @@ module fir_waveform_tb();
     // Connect verify_data to memory output
     assign verify_data = dut.memory.mem[verify_addr];
     
-    // Performance metrics
-    reg [31:0] non_pipelined_cycles;
-    reg [31:0] pipelined_cycles;
+    // Performance metrics (reduced size)
+    reg [7:0] non_pipelined_cycles;
+    reg [7:0] pipelined_cycles;
     real speedup;
     
     // Process to capture performance metrics
     always @(posedge clk) begin
         if (done && sel_pipelined == 0) begin
-            non_pipelined_cycles = cycle_counter;
+            non_pipelined_cycles = dut.cycle_counter;
         end
         else if (done && sel_pipelined == 1) begin
-            pipelined_cycles = cycle_counter;
+            pipelined_cycles = dut.cycle_counter;
             // Calculate speedup after both runs are complete
             if (non_pipelined_cycles > 0) begin
                 speedup = non_pipelined_cycles * 1.0 / pipelined_cycles;

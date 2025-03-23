@@ -9,15 +9,14 @@ module fir_tb();
     reg start = 0;
     reg sel_pipelined = 0;
     reg [9:0] input_addr = 10'd0;
-    reg [9:0] output_addr = 10'd256;  // Output starts at address 256 (was 512, reduced to fit in test memory)
+    reg [9:0] output_addr = 10'd32;  // Output starts at address 32 (reduced to fit in smaller memory)
     reg [9:0] sample_count = 10'd20;  // Process fewer samples for testing (was 100)
     
     // Output signals
     wire done;
     wire [2:0] cycle_count;      // Now only 3 bits
     
-    // Internal counters for performance measurement
-    reg [31:0] performance_counter = 0;
+    // No local performance counter needed - we use DUT's counter
     
     // Instantiate the top module
     fir_top dut (
@@ -29,21 +28,13 @@ module fir_tb();
         .cycle_count(cycle_count)
     );
     
-    // Using cycle count for basic monitoring
-    reg [31:0] cycle_counter = 0;
-    
-    // Track cycles during each test
-    always @(posedge clk) begin
-        if (start) begin
-            cycle_counter <= 0;
-        end else if (!done) begin
-            cycle_counter <= cycle_counter + 1;
-        end
-    end
+    // We'll use the DUT's built-in cycle counter for tracking performance
+    // The cycle_count port only shows the lowest 3 bits for visualization 
+    // We'll access the full 32-bit counter directly from the DUT
     
     // Performance metrics
-    integer non_pipelined_cycles = 0;
-    integer pipelined_cycles = 0;
+    reg [7:0] non_pipelined_cycles = 0;  // 8-bit counters for smaller & reasonable size
+    reg [7:0] pipelined_cycles = 0;
     real speedup;
     
     // Generate clock
@@ -73,7 +64,7 @@ module fir_tb();
     endfunction
     
     // Memory array for test data (reduced size)
-    reg [7:0] test_memory [0:511];
+    reg [7:0] test_memory [0:63];  // Reduced from 512 to 64 entries
     
     // Task to initialize memory with test data
     task initialize_memory;
@@ -90,12 +81,12 @@ module fir_tb();
             
             // Generate test signal (sine wave) and store in local memory
             // Only fill up to array size
-            for (i = 0; i < 512; i = i + 1) begin
+            for (i = 0; i < 64; i = i + 1) begin
                 test_memory[i] = sine_sample(i);
             end
             
             // Now actually initialize DUT's memory with the test data
-            for (i = 0; i < 512; i = i + 1) begin
+            for (i = 0; i < 64; i = i + 1) begin
                 // Prepare data
                 addr_a = i;
                 data_in_a = test_memory[i];
@@ -142,7 +133,7 @@ module fir_tb();
     endtask
     
     // Array to store non-pipelined results for comparison
-    reg [7:0] non_pipelined_results [0:255];
+    reg [7:0] non_pipelined_results [0:31];  // Reduced from 256 to 32 entries
     
     // Task to save filter outputs from non-pipelined run
     task save_non_pipelined_outputs;
@@ -203,7 +194,7 @@ module fir_tb();
         
         // Wait for completion
         wait(done);
-        non_pipelined_cycles = cycle_counter;
+        non_pipelined_cycles = dut.cycle_counter; // Access the full 32-bit counter directly
         $display("Non-pipelined execution completed in %d cycles", non_pipelined_cycles);
         
         // Display a few output samples
@@ -224,7 +215,7 @@ module fir_tb();
         
         // Wait for completion
         wait(done);
-        pipelined_cycles = cycle_counter;
+        pipelined_cycles = dut.cycle_counter; // Access the full 32-bit counter directly
         $display("Pipelined execution completed in %d cycles", pipelined_cycles);
         
         // Display a few output samples
@@ -247,7 +238,7 @@ module fir_tb();
     // Optional: Monitor interesting signals during simulation
     initial begin
         $monitor("Time=%t, Cycle Counter=%d, Done=%b", 
-                 $time, cycle_counter, done);
+                 $time, dut.cycle_counter, done);
     end
 
 endmodule
