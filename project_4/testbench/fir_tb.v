@@ -1,0 +1,200 @@
+`timescale 1ns / 1ps
+
+module fir_tb();
+    // Clock and reset
+    reg clk = 0;
+    reg rst = 0;
+    
+    // Control signals
+    reg start = 0;
+    reg sel_pipelined = 0;
+    reg [9:0] input_addr = 10'd0;
+    reg [9:0] output_addr = 10'd512;  // Output starts at address 512
+    reg [9:0] sample_count = 10'd100;  // Process 100 samples for test
+    
+    // Output signals
+    wire done;
+    wire [31:0] cycle_count;
+    wire [3:0] non_pipe_state;
+    wire [2:0] pipe_state;
+    
+    // Instantiate the top module
+    fir_top dut (
+        .clk(clk),
+        .rst(rst),
+        .start(start),
+        .sel_pipelined(sel_pipelined),
+        .input_addr(input_addr),
+        .output_addr(output_addr),
+        .sample_count(sample_count),
+        .done(done),
+        .cycle_count(cycle_count),
+        .non_pipe_state(non_pipe_state),
+        .pipe_state(pipe_state)
+    );
+    
+    // Memory access variables for test
+    reg [9:0] verify_addr;
+    wire [7:0] verify_data;
+    
+    // Performance metrics
+    integer non_pipelined_cycles;
+    integer pipelined_cycles;
+    real speedup;
+    
+    // Generate clock
+    always #5 clk = ~clk;  // 100 MHz clock
+    
+    // Test data generator (sine wave)
+    function [7:0] sine_sample;
+        input integer i;
+        real pi, angle, sine_value;
+        begin
+            pi = 3.14159265359;
+            angle = (i % 40) * (2.0 * pi / 40.0);  // Period of 40 samples
+            sine_value = $sin(angle) * 64.0;       // Scale to fit in 8-bit signed
+            sine_sample = $rtoi(sine_value);
+        end
+    endfunction
+    
+    // Test data generator (step function)
+    function [7:0] step_sample;
+        input integer i;
+        begin
+            if (i < 50)
+                step_sample = 8'd40;  // Step up
+            else
+                step_sample = -8'd40; // Step down
+        end
+    endfunction
+    
+    // Task to initialize memory with test data
+    task initialize_memory;
+        integer i;
+        begin
+            // Generate test signal (sine wave)
+            for (i = 0; i < 1024; i = i + 1) begin
+                // Write to memory using direct access to DUT's memory
+                dut.memory.mem[i] = sine_sample(i);
+            end
+            $display("Memory initialized with sine wave test signal");
+            
+            // Alternative: step function
+            /*
+            for (i = 0; i < 1024; i = i + 1) begin
+                dut.memory.mem[i] = step_sample(i);
+            end
+            $display("Memory initialized with step function test signal");
+            */
+        end
+    endtask
+    
+    // Task to display memory contents for debugging
+    task display_memory_range;
+        input [9:0] start_addr;
+        input [9:0] end_addr;
+        integer i;
+        begin
+            $display("Memory contents from %d to %d:", start_addr, end_addr);
+            for (i = start_addr; i <= end_addr; i = i + 1) begin
+                $display("mem[%d] = %d", i, $signed(dut.memory.mem[i]));
+            end
+        end
+    endtask
+    
+    // Task to compare filter outputs
+    task compare_outputs;
+        integer i;
+        reg [7:0] output1, output2;
+        reg mismatch;
+        
+        begin
+            mismatch = 0;
+            
+            $display("Comparing output results...");
+            for (i = 0; i < sample_count; i = i + 1) begin
+                output1 = dut.memory.mem[output_addr + i];          // Non-pipelined result
+                output2 = dut.memory.mem[output_addr + sample_count + i]; // Pipelined result
+                
+                if (output1 !== output2) begin
+                    $display("Mismatch at sample %d: Non-pipelined=%d, Pipelined=%d", 
+                             i, $signed(output1), $signed(output2));
+                    mismatch = 1;
+                end
+            end
+            
+            if (mismatch == 0)
+                $display("All outputs match between non-pipelined and pipelined versions.");
+        end
+    endtask
+    
+    // Main test sequence
+    initial begin
+        // Initialize test
+        rst = 1;
+        #20;
+        rst = 0;
+        #10;
+        
+        // Load test signal into memory
+        initialize_memory();
+        
+        // Display a few input samples for verification
+        display_memory_range(0, 9);
+        
+        // Run non-pipelined implementation
+        $display("\nStarting non-pipelined FIR filter test...");
+        sel_pipelined = 0;  // Select non-pipelined
+        output_addr = 10'd512;  // Store result starting at address 512
+        start = 1;
+        #10;
+        start = 0;
+        
+        // Wait for completion
+        wait(done);
+        non_pipelined_cycles = cycle_count;
+        $display("Non-pipelined execution completed in %d cycles", non_pipelined_cycles);
+        
+        // Display a few output samples
+        display_memory_range(output_addr, output_addr + 9);
+        
+        // Wait between tests
+        #20;
+        
+        // Run pipelined implementation
+        $display("\nStarting pipelined FIR filter test...");
+        sel_pipelined = 1;  // Select pipelined
+        output_addr = 10'd612;  // Store result at a different location
+        start = 1;
+        #10;
+        start = 0;
+        
+        // Wait for completion
+        wait(done);
+        pipelined_cycles = cycle_count;
+        $display("Pipelined execution completed in %d cycles", pipelined_cycles);
+        
+        // Display a few output samples
+        display_memory_range(output_addr, output_addr + 9);
+        
+        // Calculate speedup
+        speedup = non_pipelined_cycles * 1.0 / pipelined_cycles;
+        $display("\nPerformance comparison:");
+        $display("Non-pipelined: %d cycles", non_pipelined_cycles);
+        $display("Pipelined: %d cycles", pipelined_cycles);
+        $display("Speedup: %0.2f x", speedup);
+        
+        // Compare results from both implementations
+        compare_outputs();
+        
+        $display("\nTest complete");
+        $finish;
+    end
+    
+    // Optional: Monitor interesting signals during simulation
+    initial begin
+        $monitor("Time=%t, State(Non-Pipe=%d, Pipe=%d), Done=%b", 
+                 $time, non_pipe_state, pipe_state, done);
+    end
+
+endmodule

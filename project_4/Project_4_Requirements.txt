@@ -1,0 +1,61 @@
+Project: Pipelined vs. Non-Pipelined FIR Filter Implementation
+
+Objective:
+Develop Verilog modules that implement a 5-tap Finite Impulse Response (FIR) filter to process an input signal on the Zybo Z7 FPGA (ZYBO-Z7-10 xc7z010clg400).
+The system will receive a stream of 8-bit audio samples stored in BRAM, apply the FIR filter, and store the filtered output back in BRAM.
+
+We must implement both non-pipelined and pipelined versions and write tests to compare their performance and resource utilization.
+
+FIR Filter Specifications:
+
+    Filter Order: 5 taps
+    Fixed Coefficients:
+
+h[0]=1,h[1]=2,h[2]=3,h[3]=2,h[4]=1
+
+Filter Equation:
+y[n]=x[n]*h[0]+x[n−1]*h[1]+x[n−2]*h[2]+x[n−3]*h[3]+x[n−4]*h[4]
+
+    Data Format: 8-bit signed integers
+    Input Signal Length: 1024 samples
+    Memory: BRAM for storing input and output samples
+
+Non-Pipelined FIR Filter Implementation:
+
+    Read a sample from BRAM.
+    Multiply it by the corresponding filter coefficient.
+    Accumulate results for all 5 taps sequentially.
+    Store the filtered output back in BRAM.
+    Each sample must be fully processed before moving to the next sample.
+
+Pipelined FIR Filter Implementation:
+
+    Implement a 3-stage pipeline to improve processing speed:
+        Stage 1: Read sample & shift previous samples in the buffer.
+        Stage 2: Perform parallel multiply-accumulate (MAC) operations for all 5 taps.
+        Stage 3: Store the filtered sample back in BRAM.
+    Multiple samples should be processed in parallel, reducing latency.
+    The pipeline should process one sample per clock cycle after the initial latency.
+
+Simulation and Testbench:
+
+Verify FIR Filtering:
+
+    Simulate both versions using a predefined test signal (e.g., a sine wave or step function).
+    Compare the filtered outputs to verify correctness.
+
+Performance Comparison:
+
+    Measure total processing time for both versions.
+    Compare FPGA resource utilization (LUTs, FFs, DSPs).
+
+Waveform Analysis:
+
+    Capture simulation waveforms showing:
+        Data flow through pipeline stages.
+        Parallel multiply-accumulate operations.
+        Timing differences between pipelined and non-pipelined implementations.
+
+Deliverables:
+
+Verilog Source Code (FIR Filter, both Pipelined & Non-Pipelined Versions)
