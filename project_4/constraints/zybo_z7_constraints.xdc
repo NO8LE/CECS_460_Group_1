@@ -14,10 +14,10 @@ set_property -dict { PACKAGE_PIN G15   IOSTANDARD LVCMOS33 } [get_ports { sel_pi
 ## Done indicator - LD0
 set_property -dict { PACKAGE_PIN M14   IOSTANDARD LVCMOS33 } [get_ports { done }]; #IO_L23P_T3_35 Sch=led[0]
 
-## Cycle count debug - LD1-LD3 (connect to MSBs of cycle_count for visualization)
-set_property -dict { PACKAGE_PIN M15   IOSTANDARD LVCMOS33 } [get_ports { cycle_count[29] }]; #IO_L23N_T3_35 Sch=led[1]
-set_property -dict { PACKAGE_PIN G14   IOSTANDARD LVCMOS33 } [get_ports { cycle_count[30] }]; #IO_L15N_T2_DQS_ADV_B_15 Sch=led[2]
-set_property -dict { PACKAGE_PIN D18   IOSTANDARD LVCMOS33 } [get_ports { cycle_count[31] }]; #IO_L3N_T0_DQS_AD1N_35 Sch=led[3]
+## Cycle count debug - LD1-LD3 (connect to cycle_count for visualization)
+set_property -dict { PACKAGE_PIN M15   IOSTANDARD LVCMOS33 } [get_ports { cycle_count[0] }]; #IO_L23N_T3_35 Sch=led[1]
+set_property -dict { PACKAGE_PIN G14   IOSTANDARD LVCMOS33 } [get_ports { cycle_count[1] }]; #IO_L15N_T2_DQS_ADV_B_15 Sch=led[2]
+set_property -dict { PACKAGE_PIN D18   IOSTANDARD LVCMOS33 } [get_ports { cycle_count[2] }]; #IO_L3N_T0_DQS_AD1N_35 Sch=led[3]
 
 ## Configuration options, can be used to reduce power consumption
 set_property CFGBVS VCCO [current_design]
