@@ -54,6 +54,9 @@ module fir_waveform_tb();
         end
     endtask
     
+    // Memory array for holding test pattern
+    reg [7:0] test_pattern [0:1023];
+    
     // Initialize memory with test signal
     task init_test_signal;
         integer i;
@@ -63,34 +66,41 @@ module fir_waveform_tb();
         begin
             // Reset memory first
             rst = 1;
-            #20;
+            #50; // Longer reset
             rst = 0;
-            #10;
+            #50; // More stabilization time
             
-            // Simple step function for clear visualization in waveforms
+            // Generate test pattern
             for (i = 0; i < 1024; i = i + 1) begin
-                // Calculate sample value
+                // Calculate sample value - simple step function for clear waveform visualization
                 if (i < 5) begin
                     // Initial impulse
-                    data_in_a = 8'd64;
+                    test_pattern[i] = 8'd64;
                 end else if (i >= 10 && i < 15) begin
                     // Second impulse
-                    data_in_a = 8'd32;
+                    test_pattern[i] = 8'd32;
                 end else begin
-                    data_in_a = 8'd0;
+                    test_pattern[i] = 8'd0;
                 end
-                
-                // Write to memory using memory interface
+            end
+            
+            // Now actually initialize DUT's memory with the test pattern
+            for (i = 0; i < 1024; i = i + 1) begin
+                // Prepare data
                 addr_a = i;
+                data_in_a = test_pattern[i];
                 we_a = 1;
-                @(posedge clk); // Wait for clock edge
                 
-                // Apply values to memory ports
+                // First wait for clock edge
+                @(posedge clk);
+                
+                // Force memory control signals (properly initialize DUT memory)
                 force dut.memory.addr_a = addr_a;
-                force dut.memory.we_a = we_a;
+                force dut.memory.we_a = we_a; 
                 force dut.memory.data_in_a = data_in_a;
                 
-                @(posedge clk); // Write happens
+                // Wait for data to be written
+                @(posedge clk);
                 #1; // Small delay
                 
                 // Release forces
@@ -101,9 +111,13 @@ module fir_waveform_tb();
             
             // Wait for memory to stabilize
             we_a = 0;
-            #20;
+            #50; // Longer stabilization
             
-            $display("Memory initialized with test pattern for waveform analysis");
+            // Verify a few memory values to ensure initialization worked
+            $display("DUT Memory initialized with test pattern for waveform analysis");
+            $display("Memory[0] = %d (should be 64)", $signed(dut.memory.mem[0]));
+            $display("Memory[10] = %d (should be 32)", $signed(dut.memory.mem[10]));
+            $display("Memory[20] = %d (should be 0)", $signed(dut.memory.mem[20]));
         end
     endtask
     

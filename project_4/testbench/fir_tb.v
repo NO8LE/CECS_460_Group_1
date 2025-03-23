@@ -94,15 +94,36 @@ module fir_tb();
                 test_memory[i] = sine_sample(i);
             end
             
-            $display("Test memory initialized with sine wave test signal");
-            
-            // Alternative: step function could be used instead
-            /*
+            // Now actually initialize DUT's memory with the test data
             for (i = 0; i < 512; i = i + 1) begin
-                test_memory[i] = step_sample(i);
+                // Prepare data
+                addr_a = i;
+                data_in_a = test_memory[i];
+                we_a = 1;
+                
+                // First wait for clock edge
+                @(posedge clk);
+                
+                // Force memory control signals (properly initialize DUT memory)
+                force dut.memory.addr_a = addr_a;
+                force dut.memory.we_a = we_a;
+                force dut.memory.data_in_a = data_in_a;
+                
+                // Wait for data to be written
+                @(posedge clk);
+                #1; // Small delay
+                
+                // Release forces
+                release dut.memory.addr_a;
+                release dut.memory.we_a;
+                release dut.memory.data_in_a;
             end
-            $display("Test memory initialized with step function test signal");
-            */
+            
+            // Wait for memory to stabilize
+            we_a = 0;
+            #20;
+            
+            $display("DUT Memory initialized with sine wave test signal");
         end
     endtask
     
@@ -114,7 +135,8 @@ module fir_tb();
         begin
             $display("Memory contents from %d to %d:", start_addr, end_addr);
             for (i = start_addr; i <= end_addr; i = i + 1) begin
-                $display("mem[%d] = %d", i, $signed(test_memory[i]));
+                // Read from DUT memory instead of local memory
+                $display("mem[%d] = %d", i, $signed(dut.memory.mem[i]));
             end
         end
     endtask
@@ -128,7 +150,7 @@ module fir_tb();
         begin
             $display("Saving non-pipelined filter results...");
             for (i = 0; i < sample_count; i = i + 1) begin
-                non_pipelined_results[i] = test_memory[output_addr + i];
+                non_pipelined_results[i] = dut.memory.mem[output_addr + i];
             end
         end
     endtask
@@ -144,7 +166,7 @@ module fir_tb();
             
             $display("Comparing output results...");
             for (i = 0; i < sample_count; i = i + 1) begin
-                pipelined_output = test_memory[output_addr + i]; // Pipelined result
+                pipelined_output = dut.memory.mem[output_addr + i]; // Pipelined result from DUT memory
                 
                 if (non_pipelined_results[i] !== pipelined_output) begin
                     $display("Mismatch at sample %d: Non-pipelined=%d, Pipelined=%d", 
