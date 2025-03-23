@@ -97,9 +97,9 @@ module fir_tb();
                 @(posedge clk);
                 
                 // Force memory control signals (properly initialize DUT memory)
-                force dut.memory.addr_a = addr_a;
-                force dut.memory.we_a = we_a;
-                force dut.memory.data_in_a = data_in_a;
+                force dut.mem_addr_a = addr_a;
+                force dut.mem_we_b = we_a;
+                force dut.mem_data_in_b = data_in_a;
                 
                 // Second cycle: Wait for data to be written and address to be registered
                 @(posedge clk);
@@ -109,9 +109,9 @@ module fir_tb();
                 #1; // Small delay
                 
                 // Release forces
-                release dut.memory.addr_a;
-                release dut.memory.we_a;
-                release dut.memory.data_in_a;
+                release dut.mem_addr_a;
+                release dut.mem_we_b;
+                release dut.mem_data_in_b;
             end
             
             // Wait for memory to stabilize
@@ -131,7 +131,13 @@ module fir_tb();
             $display("Memory contents from %d to %d:", start_addr, end_addr);
             for (i = start_addr; i <= end_addr; i = i + 1) begin
                 // Read from DUT memory instead of local memory
-                $display("mem[%d] = %d", i, $signed(dut.memory.mem[i]));
+                // Use a safer way to read from memory by reading the output port
+                // This is a workaround since we can't directly access the memory array
+                force dut.mem_addr_a = i;
+                @(posedge clk);
+                @(posedge clk); // Wait for registered read
+                $display("mem[%d] = %d", i, $signed(dut.mem_data_out_a));
+                release dut.mem_addr_a;
             end
         end
     endtask
@@ -145,7 +151,12 @@ module fir_tb();
         begin
             $display("Saving non-pipelined filter results...");
             for (i = 0; i < sample_count; i = i + 1) begin
-                non_pipelined_results[i] = dut.memory.mem[output_addr + i];
+                // Read memory using port instead of direct access
+                force dut.mem_addr_a = output_addr + i;
+                @(posedge clk);
+                @(posedge clk); // Wait for registered read
+                non_pipelined_results[i] = dut.mem_data_out_a;
+                release dut.mem_addr_a;
             end
         end
     endtask
@@ -161,7 +172,12 @@ module fir_tb();
             
             $display("Comparing output results...");
             for (i = 0; i < sample_count; i = i + 1) begin
-                pipelined_output = dut.memory.mem[output_addr + i]; // Pipelined result from DUT memory
+                // Read memory using port instead of direct access
+                force dut.mem_addr_a = output_addr + i;
+                @(posedge clk);
+                @(posedge clk); // Wait for registered read
+                pipelined_output = dut.mem_data_out_a;
+                release dut.mem_addr_a;
                 
                 if (non_pipelined_results[i] !== pipelined_output) begin
                     $display("Mismatch at sample %d: Non-pipelined=%d, Pipelined=%d", 
@@ -198,7 +214,7 @@ module fir_tb();
         
         // Wait for completion
         wait(done);
-        non_pipelined_cycles = dut.cycle_counter; // Access the full 32-bit counter directly
+        non_pipelined_cycles = cycle_count; // Use the exposed cycle count port instead
         $display("Non-pipelined execution completed in %d cycles", non_pipelined_cycles);
         
         // Display a few output samples
@@ -219,7 +235,7 @@ module fir_tb();
         
         // Wait for completion
         wait(done);
-        pipelined_cycles = dut.cycle_counter; // Access the full 32-bit counter directly
+        pipelined_cycles = cycle_count; // Use the exposed cycle count port instead
         $display("Pipelined execution completed in %d cycles", pipelined_cycles);
         
         // Display a few output samples
@@ -242,7 +258,7 @@ module fir_tb();
     // Optional: Monitor interesting signals during simulation
     initial begin
         $monitor("Time=%t, Cycle Counter=%d, Done=%b", 
-                 $time, dut.cycle_counter, done);
+                 $time, cycle_count, done);
     end
 
 endmodule

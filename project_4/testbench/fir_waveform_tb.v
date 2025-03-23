@@ -42,7 +42,7 @@ module fir_waveform_tb();
             start = 0;
             wait(done);
             $display("%s implementation completed in %d cycles", 
-                     sel_pipe ? "Pipelined" : "Non-pipelined", dut.cycle_counter);
+                     sel_pipe ? "Pipelined" : "Non-pipelined", cycle_count);
             #50;  // Add some delay for visualization
         end
     endtask
@@ -89,9 +89,9 @@ module fir_waveform_tb();
                 @(posedge clk);
                 
                 // Force memory control signals (properly initialize DUT memory)
-                force dut.memory.addr_a = addr_a;
-                force dut.memory.we_a = we_a; 
-                force dut.memory.data_in_a = data_in_a;
+                force dut.mem_addr_a = addr_a;
+                force dut.mem_we_b = we_a; 
+                force dut.mem_data_in_b = data_in_a;
                 
                 // Second cycle: Wait for data to be written and address to be registered
                 @(posedge clk);
@@ -101,9 +101,9 @@ module fir_waveform_tb();
                 #1; // Small delay
                 
                 // Release forces
-                release dut.memory.addr_a;
-                release dut.memory.we_a;
-                release dut.memory.data_in_a;
+                release dut.mem_addr_a;
+                release dut.mem_we_b;
+                release dut.mem_data_in_b;
             end
             
             // Wait for memory to stabilize
@@ -112,9 +112,25 @@ module fir_waveform_tb();
             
             // Verify a few memory values to ensure initialization worked
             $display("DUT Memory initialized with test pattern for waveform analysis");
-            $display("Memory[0] = %d (should be 64)", $signed(dut.memory.mem[0]));
-            $display("Memory[10] = %d (should be 32)", $signed(dut.memory.mem[10]));
-            $display("Memory[20] = %d (should be 0)", $signed(dut.memory.mem[20]));
+            
+            // Read memory locations using address and data ports
+            force dut.mem_addr_a = 0;
+            @(posedge clk);
+            @(posedge clk); // Wait for registered read
+            $display("Memory[0] = %d (should be 64)", $signed(dut.mem_data_out_a));
+            release dut.mem_addr_a;
+            
+            force dut.mem_addr_a = 10;
+            @(posedge clk);
+            @(posedge clk); // Wait for registered read
+            $display("Memory[10] = %d (should be 32)", $signed(dut.mem_data_out_a));
+            release dut.mem_addr_a;
+            
+            force dut.mem_addr_a = 20;
+            @(posedge clk);
+            @(posedge clk); // Wait for registered read
+            $display("Memory[20] = %d (should be 0)", $signed(dut.mem_data_out_a));
+            release dut.mem_addr_a;
         end
     endtask
     
@@ -183,8 +199,24 @@ module fir_waveform_tb();
     reg [9:0] verify_addr;
     wire [7:0] verify_data;
     
-    // Connect verify_data to memory output
-    assign verify_data = dut.memory.mem[verify_addr];
+    // Connect verify_data to memory output via procedural assignment
+    // We can't directly access memory array, so we'll use a task instead
+    task read_memory_value;
+        input [9:0] addr;
+        output [7:0] data;
+        begin
+            force dut.mem_addr_a = addr;
+            @(posedge clk);
+            @(posedge clk); // Wait for registered read
+            data = dut.mem_data_out_a;
+            release dut.mem_addr_a;
+        end
+    endtask
+    
+    // Using the task to read a value when needed
+    always @(verify_addr) begin
+        read_memory_value(verify_addr, verify_data);
+    end
     
     // Performance metrics (reduced size)
     reg [7:0] non_pipelined_cycles;
@@ -194,10 +226,10 @@ module fir_waveform_tb();
     // Process to capture performance metrics
     always @(posedge clk) begin
         if (done && sel_pipelined == 0) begin
-            non_pipelined_cycles = dut.cycle_counter;
+            non_pipelined_cycles = cycle_count;
         end
         else if (done && sel_pipelined == 1) begin
-            pipelined_cycles = dut.cycle_counter;
+            pipelined_cycles = cycle_count;
             // Calculate speedup after both runs are complete
             if (non_pipelined_cycles > 0) begin
                 speedup = non_pipelined_cycles * 1.0 / pipelined_cycles;

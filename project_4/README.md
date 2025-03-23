@@ -114,18 +114,19 @@ For proper Block RAM (BRAM) inference in Vivado synthesis:
    - Read operations use the registered address
    - This ensures proper hardware implementation
 
-### Compilation of Simulation Libraries
+### Simulation Library Configuration
 
 To resolve "[Vivado 12-13277] Compiled library path does not exist" warnings:
 
-1. Run the provided `compile_xilinx_libs.tcl` script in Vivado Tcl Console:
-   ```tcl
-   source compile_xilinx_libs.tcl
-   ```
-2. This script will:
-   - Create a local directory for compiled simulation libraries
-   - Compile necessary libraries for your simulator
-   - Configure your project to use these libraries
+1. Use Vivado's built-in simulation library compilation:
+   - In Vivado, go to Tools → Compile Simulation Libraries
+   - Select your simulator (e.g., XSim)
+   - Choose a directory for the compiled libraries
+   - Click OK to start the compilation process
+
+2. Configure your project to use these libraries:
+   - Go to Project Settings → Simulation
+   - Set the "Compiled Library Location" to your compiled library path
 
 This is a one-time setup that creates proper simulation libraries for your environment.
 
@@ -138,11 +139,11 @@ The testbenches include special handling for memory initialization:
    - Second cycle: Write data and register address
    - Third cycle: Ensure proper read completion
 
-2. Custom signal forcing is used to directly initialize the BRAM memory in the DUT:
+2. Custom signal forcing is used to initialize the BRAM memory in the DUT through the top-level interface signals:
    ```verilog
-   force dut.memory.addr_a = addr_a;
-   force dut.memory.we_a = we_a;
-   force dut.memory.data_in_a = data_in_a;
+   force dut.mem_addr_a = addr_a;
+   force dut.mem_we_b = we_a;
+   force dut.mem_data_in_b = data_in_a;
    ```
 
 ## Waveform Analysis
