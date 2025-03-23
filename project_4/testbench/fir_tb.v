@@ -92,7 +92,8 @@ module fir_tb();
                 data_in_a = test_memory[i];
                 we_a = 1;
                 
-                // First wait for clock edge
+                // Two-cycle initialization to account for registered reads
+                // First cycle: Setup signals
                 @(posedge clk);
                 
                 // Force memory control signals (properly initialize DUT memory)
@@ -100,7 +101,10 @@ module fir_tb();
                 force dut.memory.we_a = we_a;
                 force dut.memory.data_in_a = data_in_a;
                 
-                // Wait for data to be written
+                // Second cycle: Wait for data to be written and address to be registered
+                @(posedge clk);
+                
+                // Third cycle: Ensure registered read completes
                 @(posedge clk);
                 #1; // Small delay
                 
