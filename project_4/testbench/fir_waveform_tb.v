@@ -55,19 +55,52 @@ module fir_waveform_tb();
     // Initialize memory with test signal
     task init_test_signal;
         integer i;
+        reg we_a;
+        reg [9:0] addr_a;
+        reg [7:0] data_in_a;
         begin
+            // Reset memory first
+            rst = 1;
+            #20;
+            rst = 0;
+            #10;
+            
             // Simple step function for clear visualization in waveforms
             for (i = 0; i < 1024; i = i + 1) begin
+                // Calculate sample value
                 if (i < 5) begin
                     // Initial impulse
-                    dut.memory.mem[i] = 8'd64;
+                    data_in_a = 8'd64;
                 end else if (i >= 10 && i < 15) begin
                     // Second impulse
-                    dut.memory.mem[i] = 8'd32;
+                    data_in_a = 8'd32;
                 end else begin
-                    dut.memory.mem[i] = 8'd0;
+                    data_in_a = 8'd0;
                 end
+                
+                // Write to memory using memory interface
+                addr_a = i;
+                we_a = 1;
+                @(posedge clk); // Wait for clock edge
+                
+                // Apply values to memory ports
+                force dut.memory.addr_a = addr_a;
+                force dut.memory.we_a = we_a;
+                force dut.memory.data_in_a = data_in_a;
+                
+                @(posedge clk); // Write happens
+                #1; // Small delay
+                
+                // Release forces
+                release dut.memory.addr_a;
+                release dut.memory.we_a;
+                release dut.memory.data_in_a;
             end
+            
+            // Wait for memory to stabilize
+            we_a = 0;
+            #20;
+            
             $display("Memory initialized with test pattern for waveform analysis");
         end
     endtask

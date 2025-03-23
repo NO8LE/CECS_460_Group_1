@@ -1,3 +1,5 @@
+`timescale 1ns / 1ps
+
 module fir_non_pipelined (
     input wire clk,
     input wire rst,

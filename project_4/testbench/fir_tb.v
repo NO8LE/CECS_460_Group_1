@@ -71,18 +71,69 @@ module fir_tb();
     // Task to initialize memory with test data
     task initialize_memory;
         integer i;
+        reg we_a;
+        reg [9:0] addr_a;
+        reg [7:0] data_in_a;
         begin
-            // Generate test signal (sine wave)
+            // Reset memory first
+            rst = 1;
+            #20;
+            rst = 0;
+            #10;
+            
+            // Generate test signal (sine wave) and write to memory properly
             for (i = 0; i < 1024; i = i + 1) begin
-                // Write to memory using direct access to DUT's memory
-                dut.memory.mem[i] = sine_sample(i);
+                // Calculate sample value
+                data_in_a = sine_sample(i);
+                
+                // Write to memory using memory interface
+                addr_a = i;
+                we_a = 1;
+                @(posedge clk); // Wait for clock edge
+                
+                // Apply values to memory ports
+                force dut.memory.addr_a = addr_a;
+                force dut.memory.we_a = we_a;
+                force dut.memory.data_in_a = data_in_a;
+                
+                @(posedge clk); // Write happens
+                #1; // Small delay
+                
+                // Release forces
+                release dut.memory.addr_a;
+                release dut.memory.we_a;
+                release dut.memory.data_in_a;
             end
+            
+            // Wait for memory to stabilize
+            we_a = 0;
+            #20;
+            
             $display("Memory initialized with sine wave test signal");
             
             // Alternative: step function
             /*
             for (i = 0; i < 1024; i = i + 1) begin
-                dut.memory.mem[i] = step_sample(i);
+                // Calculate sample value
+                data_in_a = step_sample(i);
+                
+                // Write to memory using memory interface
+                addr_a = i;
+                we_a = 1;
+                @(posedge clk); // Wait for clock edge
+                
+                // Apply values to memory ports
+                force dut.memory.addr_a = addr_a;
+                force dut.memory.we_a = we_a;
+                force dut.memory.data_in_a = data_in_a;
+                
+                @(posedge clk); // Write happens
+                #1; // Small delay
+                
+                // Release forces
+                release dut.memory.addr_a;
+                release dut.memory.we_a;
+                release dut.memory.data_in_a;
             end
             $display("Memory initialized with step function test signal");
             */

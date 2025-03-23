@@ -1,3 +1,5 @@
+`timescale 1ns / 1ps
+
 module fir_top (
     input wire clk,
     input wire rst,
