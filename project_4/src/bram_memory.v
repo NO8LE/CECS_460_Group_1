@@ -14,29 +14,38 @@ module bram_memory (
     // Memory array: 1024 words x 8 bits
     reg [7:0] mem [0:1023];
     
-    // Port A (synchronous read/write)
-    always @(posedge clk) begin
-        if (we_a) begin
-            mem[addr_a] <= data_in_a;
-        end
-        data_out_a <= mem[addr_a];
-    end
-    
-    // Port B (synchronous read/write)
-    always @(posedge clk) begin
-        if (we_b) begin
-            mem[addr_b] <= data_in_b;
-        end
-        data_out_b <= mem[addr_b];
-    end
-    
-    // Initialize memory with zeros on reset
+    // Integer for reset loop
     integer i;
+    
+    // Port A (synchronous read/write with reset)
     always @(posedge clk) begin
         if (rst) begin
-            for (i = 0; i < 1024; i = i + 1) begin
+            // Only reset half the memory from port A
+            for (i = 0; i < 512; i = i + 1) begin
                 mem[i] <= 8'b0;
             end
+            data_out_a <= 8'b0;
+        end else begin
+            if (we_a) begin
+                mem[addr_a] <= data_in_a;
+            end
+            data_out_a <= mem[addr_a];
+        end
+    end
+    
+    // Port B (synchronous read/write with reset)
+    always @(posedge clk) begin
+        if (rst) begin
+            // Reset the other half of memory from port B
+            for (i = 512; i < 1024; i = i + 1) begin
+                mem[i] <= 8'b0;
+            end
+            data_out_b <= 8'b0;
+        end else begin
+            if (we_b) begin
+                mem[addr_b] <= data_in_b;
+            end
+            data_out_b <= mem[addr_b];
         end
     end
 
