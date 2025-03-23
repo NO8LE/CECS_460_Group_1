@@ -207,7 +207,7 @@ module fir_waveform_tb();
     
     // Variables for verification - ensure they're connected
     reg [9:0] verify_addr;
-    wire [7:0] verify_data;
+    reg [7:0] verify_data;  // Changed from wire to reg as it receives procedural assignment
     
     // Connect verify_data to memory output via procedural assignment
     // We can't directly access memory array, so we'll use a task instead

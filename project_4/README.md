@@ -51,18 +51,29 @@ This project implements and compares pipelined and non-pipelined versions of a 5
 ### Running the Testbenches
 
 1. In your Xilinx Vivado environment, add all source files and testbenches to your project.
-2. To run the main testbench:
+2. **Important: Set Simulation Runtime to 40000ns**
+   - The default 1000ns runtime is **insufficient** to complete the FIR operations
+   - With the default setting, variables like 'done', 'cycle_count', 'non_pipelined_cycles', 'pipelined_cycles', and 'speedup' will show as 0 or X
+   - To set the runtime to 40000ns:
+     * **Method 1**: Before launching simulation, go to "Settings → Simulation → Simulation" and set "xsim.simulate.runtime" to "40000ns"
+     * **Method 2**: After launching simulation, enter "run 40000ns" in the Tcl Console
+     * **Method 3**: Edit the fir_tb.tcl file and change "run 1000ns" to "run 40000ns"
+
+3. To run the main testbench:
    - Select `fir_tb.v` as the simulation source
    - Run simulation to verify functionality and compare performance
    - The testbench will report cycle counts and speedup factor
+   - If you don't see results in the console, check if the simulation ran long enough (40000ns is recommended)
 
-3. To analyze waveforms:
+4. To analyze waveforms:
    - Select `fir_waveform_tb.v` as the simulation source
-   - Run simulation and observe the waveforms to understand pipeline behavior
+   - Run simulation with 40000ns runtime
+   - Observe the waveforms to understand pipeline behavior
    - Key signals to observe:
      - Pipeline stages (state, registers in each stage)
      - Memory access patterns
      - Timing differences between implementations
+     - Cycle counter values and done signals
 
 ### Expected Results
 
