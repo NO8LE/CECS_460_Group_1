@@ -1,0 +1,57 @@
+Assignment: Clock Domain Crossing (CDC) using a Dual Flip-Flop Synchronizer
+
+
+Objective:
+
+Design and implement a Clock Domain Crossing (CDC) mechanism using a Dual Flip-Flop Synchronizer. The module should safely transfer a single-bit signal from clk_A domain to clk_B domain while mitigating metastability issues.
+
+Design Requirements:
+
+  Module Implementation:
+
+   1. Dual Flip-Flop Synchronizer:
+        Implement a two-stage flip-flop synchronizer to transfer a signal (IN) from clk_A domain to clk_B domain.
+        Use two sequential flip-flops (FF-B1 and FF-B2) in the destination clock domain (clk_B) to ensure signal stability.
+
+   2. Metastability Handling:
+        Ensure the transition of the signal from clk_A to clk_B is smooth, reducing the probability of metastability.
+
+   3. Signal Flow:
+        Flip-Flop A captures IN in the clk_A domain and outputs A.
+        FF-B1 & FF-B2 (in clk_B domain) ensure synchronization and stability before sending B as the final output.
+
+Simulation and Testbench:
+
+    1. Artificially Inducing Metastability
+        Modify the testbench to introduce setup and hold time violations on the IN signal.
+        Add a small random delay (#(1e-12)) to force timing violations when transitioning between clk_A and clk_B.
+        Observe if the output (B1 or B2) exhibits glitches or undefined states.
+
+    2. Metastability Testing
+        Simulate different scenarios where IN toggles asynchronously between clk_A and clk_B.
+        Verify if B stabilizes correctly or if additional synchronizers are needed.
+
+    3. Clock Domain Behavior
+        Verify the timing of the signal transfer between clk_A and clk_B.
+        Capture waveform traces of IN, A, B1, and B to analyze synchronization behavior.
+
+    4. Waveform Analysis
+        Ensure that B follows IN correctly while preventing metastability artifacts.
+        Illustrate proper handshaking between clock domains.
+
+Documentation:
+
+    1. ASCII Block Diagrams illustrating the Dual Flip-Flop Synchronizer and signal flow.
+    2. Implementation Overview, discussing CDC challenges and mitigation strategies.
+    3. Simulation Results with waveform screenshots validating synchronization behavior (ignore. this will be done on the verilog machine).
+    4. Metastability Testing:
+        4a. Explain how metastability was artificially induced.
+        4b. Provide waveform screenshots showing glitching or undefined behavior before stabilization (ignore. this will be done on the verilog machine).
+    5. Challenges & Lessons Learned from handling CDC in RTL design.
+
+Deliverables:
+
+    1. Verilog Source Code implementing the Dual Flip-Flop Synchronizer.
+    2. Testbench & Simulation Results demonstrating metastability handling.
+    3. Report (PDF, 2–3 pages) documenting design, implementation, and testing (ignore. this will be created manually).
+
