@@ -1,31 +1,33 @@
-## Clock signal 125 MHz
-set_property -dict { PACKAGE_PIN K17   IOSTANDARD LVCMOS33 } [get_ports { clk }]; #IO_L12P_T1_MRCC_35 Sch=sysclk
-create_clock -add -name sys_clk_pin -period 8.00 -waveform {0 4} [get_ports { clk }];
+## Clock signal 125 MHz - Map to clk_A
+set_property -dict { PACKAGE_PIN K17   IOSTANDARD LVCMOS33 } [get_ports { clk_A }]; #IO_L12P_T1_MRCC_35 Sch=sysclk
+create_clock -add -name sys_clk_pin -period 8.00 -waveform {0 4} [get_ports { clk_A }];
+
+## Clock signal for clk_B - We'll derive this from clk_A using MMCM in the design
+## Or we can use the FCLK_CLK0 from the processing system for clk_B if this is on a Zynq device
+## Alternatively create a virtual clock with a different period for simulation
+create_clock -add -name clk_B_pin -period 12.00 -waveform {0 6} [get_ports { clk_B }];
+set_property -dict { PACKAGE_PIN L17   IOSTANDARD LVCMOS33 } [get_ports { clk_B }]; #Using another available clock pin
 
 ## Reset - BTN0
-set_property -dict { PACKAGE_PIN K18   IOSTANDARD LVCMOS33 } [get_ports { rst }]; #IO_L12N_T1_MRCC_35 Sch=btn[0]
+set_property -dict { PACKAGE_PIN K18   IOSTANDARD LVCMOS33 } [get_ports { reset }]; #IO_L12N_T1_MRCC_35 Sch=btn[0]
 
-## Start - BTN1
-set_property -dict { PACKAGE_PIN P16   IOSTANDARD LVCMOS33 } [get_ports { start }]; #IO_L24N_T3_34 Sch=btn[1]
+## Input signal - Using switch SW0
+set_property -dict { PACKAGE_PIN G15   IOSTANDARD LVCMOS33 } [get_ports { IN }]; #IO_L19N_T3_VREF_35 Sch=sw[0]
 
-## Mode select - SW0
-set_property -dict { PACKAGE_PIN G15   IOSTANDARD LVCMOS33 } [get_ports { sel_pipelined }]; #IO_L19N_T3_VREF_35 Sch=sw[0]
+## Output signal B - Using LED LD0
+set_property -dict { PACKAGE_PIN M14   IOSTANDARD LVCMOS33 } [get_ports { B }]; #IO_L23P_T3_35 Sch=led[0]
 
-## Done indicator - LD0
-set_property -dict { PACKAGE_PIN M14   IOSTANDARD LVCMOS33 } [get_ports { done }]; #IO_L23P_T3_35 Sch=led[0]
-
-## Cycle count debug - LD1-LD3 (connect to cycle_count for visualization)
-set_property -dict { PACKAGE_PIN M15   IOSTANDARD LVCMOS33 } [get_ports { cycle_count[0] }]; #IO_L23N_T3_35 Sch=led[1]
-set_property -dict { PACKAGE_PIN G14   IOSTANDARD LVCMOS33 } [get_ports { cycle_count[1] }]; #IO_L15N_T2_DQS_ADV_B_15 Sch=led[2]
-set_property -dict { PACKAGE_PIN D18   IOSTANDARD LVCMOS33 } [get_ports { cycle_count[2] }]; #IO_L3N_T0_DQS_AD1N_35 Sch=led[3]
+## Monitor outputs
+set_property -dict { PACKAGE_PIN M15   IOSTANDARD LVCMOS33 } [get_ports { A_mon }]; #IO_L23N_T3_35 Sch=led[1]
+set_property -dict { PACKAGE_PIN G14   IOSTANDARD LVCMOS33 } [get_ports { B1_mon }]; #IO_L15N_T2_DQS_ADV_B_15 Sch=led[2]
 
 ## Configuration options, can be used to reduce power consumption
 set_property CFGBVS VCCO [current_design]
 set_property CONFIG_VOLTAGE 3.3 [current_design]
 
-## Timing constraints
-# Set a reasonable maximum delay to ensure timing closure
-set_max_delay 8.0 -from [all_registers] -to [all_registers]
+## CDC Timing constraints
+## Declare clock domains as asynchronous to each other
+set_clock_groups -asynchronous -group [get_clocks sys_clk_pin] -group [get_clocks clk_B_pin]
 
-## False path constraints (when crossing clock domains, if any)
-# No clock domain crossing in this design, so no false paths needed
+## Set false paths for CDC signals (optional additional constraints)
+set_false_path -from [get_cells */A_reg] -to [get_cells */B1_reg]
