@@ -2,11 +2,11 @@
 set_property -dict { PACKAGE_PIN K17   IOSTANDARD LVCMOS33 } [get_ports { clk_A }]; #IO_L12P_T1_MRCC_35 Sch=sysclk
 create_clock -add -name sys_clk_pin -period 8.00 -waveform {0 4} [get_ports { clk_A }];
 
-## Clock signal for clk_B - We'll derive this from clk_A using MMCM in the design
-## Or we can use the FCLK_CLK0 from the processing system for clk_B if this is on a Zynq device
-## Alternatively create a virtual clock with a different period for simulation
+## Clock signal for clk_B
 create_clock -add -name clk_B_pin -period 12.00 -waveform {0 6} [get_ports { clk_B }];
 set_property -dict { PACKAGE_PIN L17   IOSTANDARD LVCMOS33 } [get_ports { clk_B }]; #Using another available clock pin
+## L17 is N side of differential pair, need to bypass dedicated clock routing check
+set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets clk_B_IBUF]
 
 ## Reset - BTN0
 set_property -dict { PACKAGE_PIN K18   IOSTANDARD LVCMOS33 } [get_ports { reset }]; #IO_L12N_T1_MRCC_35 Sch=btn[0]
