@@ -44,6 +44,9 @@ module bist(
             // Handle state transitions
             state <= next_state;
             
+            // Set BIST active flag based on state
+            bist_active <= (next_state != IDLE && next_state != TEST_DONE);
+            
             // Count cycles in each test state
             if (state == next_state) begin
                 if (bist_active)
@@ -69,7 +72,6 @@ module bist(
                 end
                 
                 TEST_DONE: begin
-                    bist_active <= 0;
                     bist_pass <= !test_failed;
                 end
             endcase
@@ -82,10 +84,8 @@ module bist(
         
         case (state)
             IDLE: begin
-                if (start_bist) begin
+                if (start_bist)
                     next_state = TEST_ALT_1;
-                    bist_active = 1;
-                end
             end
             
             TEST_ALT_1: begin

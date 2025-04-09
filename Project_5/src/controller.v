@@ -13,10 +13,10 @@ module controller(
 );
 
     // State definitions
-    localparam RESET       = 2'd0;  // Initial reset state
-    localparam WAIT_BIST   = 2'd1;  // Waiting for BIST to complete
-    localparam WAIT_START  = 2'd2;  // Waiting for start signal (after BIST passed)
-    localparam NORMAL_OP   = 2'd3;  // Normal operation
+    localparam [1:0] RESET       = 2'b00;  // Initial reset state
+    localparam [1:0] WAIT_BIST   = 2'b01;  // Waiting for BIST to complete
+    localparam [1:0] WAIT_START  = 2'b10;  // Waiting for start signal (after BIST passed)
+    localparam [1:0] NORMAL_OP   = 2'b11;  // Normal operation
 
     reg [1:0] state, next_state;
     

@@ -4,10 +4,16 @@ module top_module(
     input wire clk,                  // System clock
     input wire rst,                  // Reset signal
     input wire start,                // Start normal operation
-    input wire sel_pipelined,        // Not used in current implementation, for future expansion
+    input wire sel_pipelined,        // Control for pipeline mode (reserved for future use)
     output wire done,                // Indicates normal operation is active
     output wire [2:0] cycle_count    // Debug output for cycle counting
 );
+
+    // We use sel_pipelined to select between different test data sets
+    // during normal operation, though the primary pipelining strategy
+    // remains the same.
+    wire use_alt_data;
+    assign use_alt_data = sel_pipelined;
 
     // Internal signals
     wire start_bist;                 // Signal to start BIST
@@ -71,15 +77,24 @@ module top_module(
             c_in = c_test;
             sel_eq_in = sel_eq_test;
         end else begin
-            // During normal operation, use runtime inputs
+            // During normal operation, use runtime inputs with data set selected by sel_pipelined
             // In a real implementation, these would come from sensors or external inputs
-            // For this example, we're using fixed values
-            x1_in = 8'sd10;          // Example altitude sensor input
-            x2_in = 8'sd15;          // Example altitude sensor input
-            v_in = 8'sd12;           // Example voltage reading
-            t_in = 8'sd8;            // Example time value
-            c_in = 8'sd20;           // Example constant value
-            sel_eq_in = sel_eq;      // Use controller's equation selection
+            if (use_alt_data) begin
+                // Alternative data set when sel_pipelined is active
+                x1_in = 8'sd7;           // Alternative altitude sensor input
+                x2_in = 8'sd9;           // Alternative altitude sensor input
+                v_in = 8'sd6;            // Alternative voltage reading
+                t_in = 8'sd4;            // Alternative time value
+                c_in = 8'sd15;           // Alternative constant value
+            end else begin
+                // Default data set
+                x1_in = 8'sd10;          // Default altitude sensor input
+                x2_in = 8'sd15;          // Default altitude sensor input
+                v_in = 8'sd12;           // Default voltage reading
+                t_in = 8'sd8;            // Default time value
+                c_in = 8'sd20;           // Default constant value
+            end
+            sel_eq_in = sel_eq;          // Use controller's equation selection
         end
     end
     

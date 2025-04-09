@@ -25,7 +25,7 @@ set_property CONFIG_VOLTAGE 3.3 [current_design]
 
 ## Timing constraints
 # Set a reasonable maximum delay to ensure timing closure
-set_max_delay 8.0 -from [all_registers] -to [all_registers]
+set_max_delay 8.0 -from [get_cells -hierarchical -filter {IS_SEQUENTIAL==1}] -to [get_cells -hierarchical -filter {IS_SEQUENTIAL==1}]
 
 ## False path constraints (when crossing clock domains, if any)
 # No clock domain crossing in this design, so no false paths needed

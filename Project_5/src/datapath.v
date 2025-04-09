@@ -60,6 +60,7 @@ module datapath(
             mul_result <= 16'd0;
             add_term <= 16'd0;
             sel_eq_stage1 <= 0;
+            sel_eq_stage2 <= 0;
             first_term <= 1;
         end else begin
             mul_result <= mul_out;
