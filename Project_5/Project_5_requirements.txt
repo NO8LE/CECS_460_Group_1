@@ -1,0 +1,75 @@
+Project: 
+	Resource Sharing & BIST
+
+Details: 	
+
+	You are part of a design team developing a flight controller for a lightweight autonomous drone. Due to strict weight and power limits, the drone's control system must minimize hardware usage. The control unit performs two alternating tasks every clock cycle:
+
+    1) Compute altitude correction based on sensor data
+
+    2) Predict battery life during flight
+
+	To save FPGA area, the system must reuse a single multiplier and adder to compute both equations in alternating cycles. Before each flight, the controller also performs a built-in self-test (BIST) to ensure the arithmetic units are functional and safe to use.
+
+1) Specifications:
+	a) Operations:
+
+    	1) Altitude Correction equation: 
+			A = (x_1 * k_1) + (x_2 * k_2), where k_1 = 3, k_2 = 5
+
+		2) Battery Estimation equation: 
+			B = (v * t) + c
+
+	b) Data Format:
+
+		1) All operands: 8-bit signed integers
+
+		2) Outputs: 16-bit signed integers
+
+		3) Only one multiplier and one adder must be used
+
+2) Shared Resource Implementation: 
+
+    * Use a 2-stage pipelined architecture.
+
+    * Control logic should switch between equations every clock cycle.
+
+    * Multiplexers should route operands to shared units.
+
+    * The output of each equation should be available every other cycle.
+
+3) Built-In Self-Test (BIST):
+
+    * At reset, run a short BIST routine to validate the multiplier and adder with known input-output pairs.
+
+    * Indicate test pass/fail via an output signal.
+
+    * Normal operation begins only if the BIST passes.
+
+4) Simulation and Testbench:
+
+    * Simulate alternating operations using a sequence of input vectors.
+
+    * Simulate BIST behavior with test vectors.
+
+5) Documentation:
+
+	a)  Submit a 2–5 page report including:
+
+		1) Block Diagram showing the shared datapath and BIST logic
+
+		2) Implementation Overview, focusing on control logic and pipelining
+
+		3) Simulation Results with expected and actual output values
+
+		4) Design Notes on BIST implementation and its role in validating resources
+
+6) Deliverables:
+
+    * Verilog Source Code (Controller, BIST, Top Module)
+
+    * Testbench & Simulation Results
+
+    * Report (PDF, 2–5 pages)
+    (GitHub optional)
+
