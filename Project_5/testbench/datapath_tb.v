@@ -60,10 +60,10 @@ module datapath_tb;
         test_t_values[1] = 8'sd8;
         test_c_values[1] = 8'sd20;
         
-        test_x1_values[2] = 8'sd-5;  // Test case 3 (negative values)
+        test_x1_values[2] = -8'sd5;  // Test case 3 (negative values)
         test_x2_values[2] = 8'sd7;
-        test_v_values[2] = 8'sd-3;
-        test_t_values[2] = 8'sd-2;
+        test_v_values[2] = -8'sd3;
+        test_t_values[2] = -8'sd2;
         test_c_values[2] = 8'sd10;
         
         // Initialize Inputs
