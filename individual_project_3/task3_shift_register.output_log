@@ -1,0 +1,12 @@
+
+----- 4-bit SIPO Shift Register -----
+Time: 0 s Register: 0
+
+Info: (I702) default timescale unit used for tracing: 1 ps (shift_register_waveform.vcd)
+Time: 5 ns Input: 1, Register: 0
+Time: 10 ns Input: 0, Register: 0
+Time: 15 ns Input: 1, Register: 1
+Time: 20 ns RESET, Register: 1
+Time: 25 ns Input: 1, Register: 1
+Time: 30 ns Input: 0, Register: 2
+Time: 35 ns Input: 1, Register: 5

@@ -1,0 +1,12 @@
+
+----- Fibonacci Sequence Generator -----
+Time: 0 s Fibonacci: 0
+
+Info: (I702) default timescale unit used for tracing: 1 ps (fibonacci_waveform.vcd)
+Time: 3 ns Fibonacci: 1
+Time: 6 ns Fibonacci: 1
+Time: 9 ns Fibonacci: 2
+Time: 12 ns Fibonacci: 3
+Time: 15 ns Fibonacci: 5
+Time: 18 ns Fibonacci: 8
+Time: 21 ns Fibonacci: 13

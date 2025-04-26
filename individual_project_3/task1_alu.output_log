@@ -1,0 +1,12 @@
+
+----- ALU Operations Test -----
+
+Info: (I702) default timescale unit used for tracing: 1 ps (alu_waveform.vcd)
+Addition (10 + 5): 15
+Subtraction (10 - 5): 5
+Multiplication (10 * 5): 50
+Pass-through (a = 10): 10
+Addition (20 + 7): 27
+Subtraction (20 - 7): 13
+Multiplication (20 * 7): 140
+Pass-through (a = 20): 20

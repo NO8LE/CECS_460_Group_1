@@ -1,0 +1,44 @@
+$date
+     Apr 26, 2025       12:07:23
+$end
+
+$version
+ SystemC 2.3.3-Accellera --- Apr 26 2025 12:02:31
+$end
+
+$timescale
+     1 ps
+$end
+
+$scope module SystemC $end
+$var wire   32  aaaaa  fibonacci [31:0]  $end
+$upscope $end
+$enddefinitions  $end
+
+$comment
+All initial values are dumped below at time 0 sec = 0 timescale units.
+$end
+
+$dumpvars
+b0 aaaaa
+$end
+
+#3000
+b1 aaaaa
+
+#9000
+b10 aaaaa
+
+#12000
+b11 aaaaa
+
+#15000
+b101 aaaaa
+
+#18000
+b1000 aaaaa
+
+#21000
+b1101 aaaaa
+
+#22000
