@@ -3,6 +3,8 @@
 // each column as a polynomial over GF(2^8) and multiplying it
 // with a fixed polynomial c(x) = 3x^3 + x^2 + x + 2
 
+`timescale 1ns / 1ps
+
 module mix_columns(
     input wire [127:0] in,  // 16-byte state array input
     output wire [127:0] out // 16-byte state array output

@@ -2,6 +2,8 @@
 // This module implements a fully pipelined version of AES-128
 // allowing for maximum throughput of one block per clock cycle
 
+`timescale 1ns / 1ps
+
 module aes_pipelined(
     input wire clk,               // System clock
     input wire rst,               // Reset signal

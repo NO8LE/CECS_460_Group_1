@@ -1,6 +1,8 @@
 // S-box implementation for AES encryption
 // The S-box is a substitution table used in the SubBytes transformation
 
+`timescale 1ns / 1ps
+
 module sbox(
     input wire [7:0] in,   // 8-bit input
     output reg [7:0] out   // 8-bit substituted output

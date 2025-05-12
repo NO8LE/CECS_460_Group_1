@@ -1,6 +1,8 @@
 // SubBytes operation for AES encryption
 // This module applies the S-box substitution to each byte in the state
 
+`timescale 1ns / 1ps
+
 module sub_bytes(
     input wire [127:0] in,  // 16-byte state array input
     output wire [127:0] out // 16-byte state array output

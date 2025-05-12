@@ -1,6 +1,8 @@
 // Key Expansion module for AES-128
 // Generates round keys from the initial 128-bit key
 
+`timescale 1ns / 1ps
+
 module key_expansion(
     input wire clk,          // Clock signal
     input wire rst,          // Reset signal
