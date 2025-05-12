@@ -12,7 +12,8 @@ module aes_pipelined(
     output wire valid_out,        // Output valid indicator
     output wire [127:0] data_out  // Output data block
 );
-    // Key expansion wires
+    // Replace wire array with flattened bus and individual wires
+    wire [1407:0] round_keys_flat;
     wire [127:0] round_keys [0:10];
     
     // Pipeline stage registers
@@ -36,13 +37,26 @@ module aes_pipelined(
     wire [127:0] r1_round_out, r2_round_out, r3_round_out, r4_round_out, r5_round_out;
     wire [127:0] r6_round_out, r7_round_out, r8_round_out, r9_round_out, r10_round_out;
     
-    // Instantiate key expansion module
+    // Instantiate key expansion module with flattened bus
     key_expansion key_exp_inst (
         .clk(clk),
         .rst(rst),
         .key(key),
-        .round_keys(round_keys)
+        .round_keys_flat(round_keys_flat)
     );
+    
+    // Unflatten the bus back into an array
+    assign round_keys[0] = round_keys_flat[127:0];
+    assign round_keys[1] = round_keys_flat[255:128];
+    assign round_keys[2] = round_keys_flat[383:256];
+    assign round_keys[3] = round_keys_flat[511:384];
+    assign round_keys[4] = round_keys_flat[639:512];
+    assign round_keys[5] = round_keys_flat[767:640];
+    assign round_keys[6] = round_keys_flat[895:768];
+    assign round_keys[7] = round_keys_flat[1023:896];
+    assign round_keys[8] = round_keys_flat[1151:1024];
+    assign round_keys[9] = round_keys_flat[1279:1152];
+    assign round_keys[10] = round_keys_flat[1407:1280];
     
     // Initial round (just AddRoundKey)
     always @(posedge clk or posedge rst) begin

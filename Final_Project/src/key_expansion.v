@@ -5,8 +5,11 @@ module key_expansion(
     input wire clk,          // Clock signal
     input wire rst,          // Reset signal
     input wire [127:0] key,  // Initial 128-bit key
-    output reg [127:0] round_keys [0:10]  // 11 round keys (including initial key)
+    // Replace array output with flattened bus
+    output reg [1407:0] round_keys_flat  // 11 keys × 128 bits = 1408 bits
 );
+    // Internal array for calculation
+    reg [127:0] round_keys [0:10];  // 11 round keys (including initial key)
     // Round constants (Rcon) used in key expansion
     reg [7:0] rcon [0:9];
     
@@ -87,5 +90,22 @@ module key_expansion(
                 round_keys[i][31:0] = round_keys[i-1][31:0] ^ round_keys[i][63:32];
             end
         end
+    end
+    
+    // Add this at the end to flatten the array
+    always @(*) begin
+        round_keys_flat = {
+            round_keys[10],
+            round_keys[9],
+            round_keys[8],
+            round_keys[7],
+            round_keys[6],
+            round_keys[5],
+            round_keys[4],
+            round_keys[3],
+            round_keys[2],
+            round_keys[1],
+            round_keys[0]
+        };
     end
 endmodule
