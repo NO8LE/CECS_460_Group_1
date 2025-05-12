@@ -31,7 +31,8 @@ module key_expansion(
     
     // Internal variables
     reg [127:0] temp_round_keys [0:10];
-    reg [31:0] temp_word;
+    wire [31:0] temp_word;
+    reg [31:0] temp_word_reg;
     wire [31:0] rotated_word, subbed_word;
     
     // Define the SubWord function (apply S-box to each byte of a word)
@@ -58,7 +59,10 @@ module key_expansion(
     );
     
     // RotWord function (rotate the word by one byte to the left)
-    assign rotated_word = {temp_word[23:0], temp_word[31:24]};
+    assign rotated_word = {temp_word_reg[23:0], temp_word_reg[31:24]};
+    
+    // Connect temp_word to the last word of previous round key
+    assign temp_word = temp_word_reg;
     
     // Combine the substituted bytes
     assign subbed_word = {subbed_byte0, subbed_byte1, subbed_byte2, subbed_byte3};
@@ -78,13 +82,13 @@ module key_expansion(
             // Generate remaining round keys
             for (i = 1; i <= 10; i = i + 1) begin
                 // Extract words from the previous round key
-                temp_word = round_keys[i-1][31:0];  // Last word of previous round key
+                temp_word_reg = round_keys[i-1][31:0];  // Last word of previous round key
                 
                 // Apply RotWord and SubWord, then XOR with Rcon
-                temp_word = {subbed_byte0 ^ rcon[i-1], subbed_byte1, subbed_byte2, subbed_byte3};
+                // Use a separate variable for the result to avoid Set/Reset conflict
+                round_keys[i][127:96] = round_keys[i-1][127:96] ^ {subbed_byte0 ^ rcon[i-1], subbed_byte1, subbed_byte2, subbed_byte3};
                 
-                // Generate the first word of the new round key
-                round_keys[i][127:96] = round_keys[i-1][127:96] ^ temp_word;
+                // First word is already generated above
                 
                 // Generate the remaining words
                 round_keys[i][95:64] = round_keys[i-1][95:64] ^ round_keys[i][127:96];
