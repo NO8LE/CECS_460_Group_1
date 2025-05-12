@@ -1,6 +1,8 @@
 // Inverse S-box implementation for AES decryption
 // The inverse S-box is used to reverse the SubBytes transformation
 
+`timescale 1ns / 1ps
+
 module inv_sbox(
     input wire [7:0] in,   // 8-bit input
     output reg [7:0] out   // 8-bit substituted output

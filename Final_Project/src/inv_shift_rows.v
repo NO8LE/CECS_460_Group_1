@@ -5,6 +5,8 @@
 // - Row 2: Shift right by 2 bytes
 // - Row 3: Shift right by 3 bytes
 
+`timescale 1ns / 1ps
+
 module inv_shift_rows(
     input wire [127:0] in,  // 16-byte state array input
     output wire [127:0] out // 16-byte state array output

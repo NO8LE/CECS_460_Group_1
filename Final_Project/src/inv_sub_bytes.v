@@ -1,6 +1,8 @@
 // Inverse SubBytes operation for AES decryption
 // This module applies the inverse S-box substitution to each byte in the state
 
+`timescale 1ns / 1ps
+
 module inv_sub_bytes(
     input wire [127:0] in,  // 16-byte state array input
     output wire [127:0] out // 16-byte state array output

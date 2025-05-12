@@ -2,6 +2,8 @@
 // Implements a single round of the AES decryption algorithm,
 // combining InvShiftRows, InvSubBytes, AddRoundKey, and InvMixColumns operations
 
+`timescale 1ns / 1ps
+
 module aes_inv_round(
     input wire clk,                // Clock signal
     input wire rst,                // Reset signal

@@ -1,6 +1,8 @@
 // AES Top-Level module
 // Implements AES encryption/decryption with selectable pipelined/non-pipelined modes
 
+`timescale 1ns / 1ps
+
 module aes_top(
     input wire clk,               // System clock
     input wire rst,               // Reset signal
@@ -29,6 +31,7 @@ module aes_top(
     reg init_done;
     
     // Wires for round key expansion
+    wire [1407:0] round_keys_flat;
     wire [127:0] round_keys [0:10];
     
     // Wires for round modules
@@ -43,8 +46,21 @@ module aes_top(
         .clk(clk),
         .rst(rst),
         .key(key),
-        .round_keys(round_keys)
+        .round_keys_flat(round_keys_flat)
     );
+    
+    // Unflatten the bus back into an array
+    assign round_keys[0] = round_keys_flat[127:0];
+    assign round_keys[1] = round_keys_flat[255:128];
+    assign round_keys[2] = round_keys_flat[383:256];
+    assign round_keys[3] = round_keys_flat[511:384];
+    assign round_keys[4] = round_keys_flat[639:512];
+    assign round_keys[5] = round_keys_flat[767:640];
+    assign round_keys[6] = round_keys_flat[895:768];
+    assign round_keys[7] = round_keys_flat[1023:896];
+    assign round_keys[8] = round_keys_flat[1151:1024];
+    assign round_keys[9] = round_keys_flat[1279:1152];
+    assign round_keys[10] = round_keys_flat[1407:1280];
     
     // AES round module for encryption
     aes_round round_inst (

@@ -3,6 +3,8 @@
 // each column as a polynomial over GF(2^8) and multiplying it
 // with the inverse of the fixed polynomial used in MixColumns
 
+`timescale 1ns / 1ps
+
 module inv_mix_columns(
     input wire [127:0] in,  // 16-byte state array input
     output wire [127:0] out // 16-byte state array output
