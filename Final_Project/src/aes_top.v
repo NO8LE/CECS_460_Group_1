@@ -1,166 +1,82 @@
 // AES Top-Level module
-// Implements AES encryption/decryption with selectable pipelined/non-pipelined modes
+// Implements AES encryption/decryption with a serial interface
+// for compatibility with ZYBO Z7-10 FPGA I/O constraints
 
 `timescale 1ns / 1ps
 
 module aes_top(
-    input wire clk,               // System clock
-    input wire rst,               // Reset signal
-    input wire start,             // Start operation signal
-    input wire sel_pipelined,     // Select pipelined (1) or non-pipelined (0) mode
-    input wire [127:0] data_in,   // Input data block
-    input wire [127:0] key,       // Input key
-    input wire decrypt,           // 1 for decryption, 0 for encryption
-    output reg done,              // Operation complete indicator
-    output reg [2:0] cycle_count, // Debug output for cycle count visualization
-    output reg [127:0] data_out   // Output data block
+    input wire clk,              // System clock (125 MHz) - K17
+    input wire rst,              // Reset button (BTN0) - K18
+    input wire start,            // Start operation (BTN1) - P16
+    input wire wr_en,            // Write enable for loading data (BTN2) - K19
+    input wire [4:0] addr,       // Address bus (SW1-SW5)
+    input wire [7:0] data_in,    // 8-bit input data bus (SW6-SW13)
+    input wire decrypt,          // Decrypt mode select (SW0) - G15
+    output wire [7:0] data_out,  // 8-bit output data bus (LED0-LED7)
+    output wire busy,            // Busy indicator (LED8)
+    output wire valid,           // Valid data indicator (LED9)
+    output wire done             // Operation complete indicator (LED10)
 );
-    // State machine states
-    localparam IDLE = 2'd0;
-    localparam INIT = 2'd1;
-    localparam PROCESS = 2'd2;
-    localparam DONE = 2'd3;
-    
-    // Registers for state machine and control
-    reg [1:0] state, next_state;
-    reg [3:0] round_counter;
-    reg [7:0] full_cycle_counter;
-    
-    // Registers for data and key storage
-    reg [127:0] state_reg;
-    reg init_done;
-    
-    // Wires for round key expansion
-    wire [1407:0] round_keys_flat;
-    wire [127:0] round_keys [0:10];
-    
-    // Wires for round modules
-    wire [127:0] round_out;
-    wire [127:0] inv_round_out;
-    wire [127:0] current_round_key;
-    wire is_final_round;
-    wire is_first_round;
-    
-    // Key expansion module instantiation
-    key_expansion key_exp_inst (
+
+    // Instantiate the AES serial interface
+    aes_serial_interface aes_serial_inst (
         .clk(clk),
         .rst(rst),
-        .key(key),
-        .round_keys_flat(round_keys_flat)
+        .data_in(data_in),
+        .data_out(data_out),
+        .addr(addr),
+        .wr_en(wr_en),
+        .start(start),
+        .decrypt(decrypt),
+        .busy(busy),
+        .valid(valid),
+        .done(done)
     );
-    
-    // Unflatten the bus back into an array
-    assign round_keys[0] = round_keys_flat[127:0];
-    assign round_keys[1] = round_keys_flat[255:128];
-    assign round_keys[2] = round_keys_flat[383:256];
-    assign round_keys[3] = round_keys_flat[511:384];
-    assign round_keys[4] = round_keys_flat[639:512];
-    assign round_keys[5] = round_keys_flat[767:640];
-    assign round_keys[6] = round_keys_flat[895:768];
-    assign round_keys[7] = round_keys_flat[1023:896];
-    assign round_keys[8] = round_keys_flat[1151:1024];
-    assign round_keys[9] = round_keys_flat[1279:1152];
-    assign round_keys[10] = round_keys_flat[1407:1280];
-    
-    // AES round module for encryption
-    aes_round round_inst (
-        .clk(clk),
-        .rst(rst),
-        .data_in(state_reg),
-        .round_key(current_round_key),
-        .is_final_round(is_final_round),
-        .data_out(round_out)
-    );
-    
-    // AES inverse round module for decryption
-    aes_inv_round inv_round_inst (
-        .clk(clk),
-        .rst(rst),
-        .data_in(state_reg),
-        .round_key(current_round_key),
-        .is_first_round(is_first_round),
-        .data_out(inv_round_out)
-    );
-    
-    // Control signals for round modules
-    assign is_final_round = (round_counter == 4'd10);
-    assign is_first_round = (round_counter == 4'd0);
-    
-    // Select the appropriate round key
-    assign current_round_key = decrypt ? round_keys[10-round_counter] : round_keys[round_counter];
-    
-    // State machine for control logic
-    always @(posedge clk or posedge rst) begin
-        if (rst) begin
-            state <= IDLE;
-            round_counter <= 4'd0;
-            full_cycle_counter <= 8'd0;
-            state_reg <= 128'b0;
-            done <= 1'b0;
-            init_done <= 1'b0;
-            cycle_count <= 3'b0;
-            data_out <= 128'b0;
-        end else begin
-            case (state)
-                IDLE: begin
-                    if (start) begin
-                        state <= INIT;
-                        round_counter <= 4'd0;
-                        full_cycle_counter <= 8'd0;
-                        done <= 1'b0;
-                    end
-                end
-                
-                INIT: begin
-                    // Initial round: just AddRoundKey
-                    if (decrypt) begin
-                        // For decryption, start with the last round key
-                        state_reg <= data_in ^ round_keys[10];
-                    end else begin
-                        // For encryption, start with the first round key
-                        state_reg <= data_in ^ round_keys[0];
-                    end
-                    round_counter <= decrypt ? 4'd1 : 4'd1;  // Move to the first actual round
-                    state <= PROCESS;
-                    full_cycle_counter <= full_cycle_counter + 1;
-                end
-                
-                PROCESS: begin
-                    // Update state register with round output
-                    state_reg <= decrypt ? inv_round_out : round_out;
-                    
-                    // Increment round counter and cycle counter
-                    if (sel_pipelined || round_counter < 10) begin
-                        round_counter <= round_counter + 1;
-                        full_cycle_counter <= full_cycle_counter + 1;
-                    end
-                    
-                    // Check if all rounds are complete
-                    if ((decrypt && round_counter == 4'd10) || (!decrypt && round_counter == 4'd10)) begin
-                        state <= DONE;
-                    end
-                end
-                
-                DONE: begin
-                    // Assign output data and set done flag
-                    data_out <= state_reg;
-                    done <= 1'b1;
-                    state <= IDLE;
-                    // Extract bits for cycle count debug LEDs
-                    cycle_count <= full_cycle_counter[2:0];
-                end
-            endcase
-        end
-    end
-    
-    // Pipelined implementation logic
-    // For pipelined mode, we would instantiate 10 rounds in sequence with registers in between
-    // This implementation sketch would need to be expanded for full pipelining
-    // Here we're just using the same round module iteratively, with cycle counting
-    
-    // Performance metrics
-    // The cycle count will show the number of clock cycles taken to complete the operation
-    // In non-pipelined mode, this should be approximately 10-12 cycles
-    // In fully pipelined mode, the throughput would approach 1 block per cycle after filling the pipeline
-    
+
 endmodule
+
+/* 
+IMPLEMENTATION NOTES:
+
+This is a revised implementation of the AES-128 encryption/decryption module specifically 
+for the ZYBO Z7-10 FPGA. The original wide parallel interface has been replaced with a 
+serial interface to reduce I/O pin count from 381 to 24 pins, solving the overutilization issue.
+
+The module uses the pipelined AES core internally but provides a byte-by-byte interface
+for loading data/key and reading results.
+
+USAGE INSTRUCTIONS:
+
+1. Loading Data:
+   - Set the address (addr[4:0]) to select which byte to load:
+     * 0-15: Input data bytes (most significant byte first)
+     * 16-31: Key bytes (most significant byte first)
+   - Set the input data (data_in[7:0]) to the desired value
+   - Assert wr_en (press BTN2) to store the byte
+   - Repeat for all 32 bytes (16 for data, 16 for key)
+
+2. Starting Operation:
+   - Select encrypt/decrypt mode using decrypt switch (SW0)
+   - Assert start (press BTN1) to begin operation
+   - The busy LED will indicate the core is processing
+   - Wait for done LED to indicate completion
+
+3. Reading Results:
+   - Set the address (addr[4:0]) to select which byte to read (0-15)
+   - Observe the output byte on data_out LEDs (LED0-LED7)
+   - The valid LED indicates output data is valid
+   - Repeat for all 16 bytes of the result
+
+Hardware Connections:
+- Clock: Connect to 125MHz system clock (K17)
+- Reset: Connect to BTN0 (K18)
+- Start: Connect to BTN1 (P16)
+- Write Enable: Connect to BTN2 (K19)
+- Address[4:0]: Connect to SW1-SW5
+- Data_in[7:0]: Connect to SW6-SW13
+- Decrypt: Connect to SW0 (G15)
+- Data_out[7:0]: Connect to LED0-LED7
+- Busy: Connect to LED8
+- Valid: Connect to LED9
+- Done: Connect to LED10
+*/
