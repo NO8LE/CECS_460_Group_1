@@ -106,7 +106,7 @@ module aes_serial_interface (
                 READ_DATA: begin
                     // Output the result one byte at a time when addr matches byte_counter
                     if (addr == byte_counter) begin
-                        data_out <= full_data_out[127-8*byte_counter -: 8];
+                        data_out <= full_data_out[127-8*byte_counter[3:0] -: 8];
                     end
                     
                     // Move to next state when all bytes have been made available
@@ -114,7 +114,7 @@ module aes_serial_interface (
                         state <= COMPLETE;
                         done <= 1'b1;
                     end else begin
-                        byte_counter <= byte_counter + 1;
+                        byte_counter <= byte_counter + 1'b1; // Use explicit 1-bit value
                     end
                 end
                 
