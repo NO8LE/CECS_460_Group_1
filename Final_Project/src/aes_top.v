@@ -1,23 +1,45 @@
 // AES Top-Level module
-// Implements AES encryption/decryption with a serial interface
-// for compatibility with ZYBO Z7-10 FPGA I/O constraints
+// Supports both direct mode and state-machine mode for the ZYBO Z7-10 FPGA
+// with limited I/O resources
 
 `timescale 1ns / 1ps
 
 module aes_top(
-    input wire clk,              // System clock (125 MHz) - K17
-    input wire rst,              // Reset button (BTN0) - K18
-    input wire start,            // Start operation (BTN1) - P16
-    input wire wr_en,            // Write enable for loading data (BTN2) - K19
-    input wire [4:0] addr,       // Address bus (SW1-SW5)
-    input wire [7:0] data_in,    // 8-bit input data bus (SW6-SW13)
-    input wire decrypt,          // Decrypt mode select (SW0) - G15
-    output wire [7:0] data_out,  // 8-bit output data bus (LED0-LED7)
-    output wire busy,            // Busy indicator (LED8)
-    output wire valid,           // Valid data indicator (LED9)
-    output wire done             // Operation complete indicator (LED10)
+    input wire clk,                  // System clock (125 MHz) - K17
+    input wire rst,                  // Reset button (BTN0) - K18
+    input wire start,                // Start operation (BTN1) - P16
+    input wire wr_en,                // Write enable for loading data (BTN2) - K19
+    input wire mode_btn,             // Mode toggle button (BTN3) - Y16
+    input wire [3:0] sw,             // 4 switches (SW0-SW3)
+    output wire [7:0] led_out        // 8 LEDs for output data and status
 );
 
+    // Internal signals
+    reg [7:0] data_in;               // Data input to AES core
+    reg [4:0] addr;                  // Address for AES core
+    wire [7:0] data_out;             // Data output from AES core
+    wire busy, valid, done;          // Status signals
+    reg decrypt;                     // Decrypt mode select
+    
+    // State machine states
+    localparam STATE_DATA_LOW  = 2'd0;  // Input lower nibble of data
+    localparam STATE_DATA_HIGH = 2'd1;  // Input upper nibble of data
+    localparam STATE_ADDR      = 2'd2;  // Input address
+    localparam STATE_MONITOR   = 2'd3;  // Monitor/display output
+    
+    // State registers
+    reg [1:0] state;
+    reg mode_btn_prev;
+    
+    // Initialize state
+    initial begin
+        state = STATE_DATA_LOW;
+        data_in = 8'h00;
+        addr = 5'h00;
+        mode_btn_prev = 1'b0;
+        decrypt = 1'b0;
+    end
+    
     // Instantiate the AES serial interface
     aes_serial_interface aes_serial_inst (
         .clk(clk),
@@ -32,51 +54,129 @@ module aes_top(
         .valid(valid),
         .done(done)
     );
-
+    
+    // State machine for input handling
+    always @(posedge clk or posedge rst) begin
+        if (rst) begin
+            state <= STATE_DATA_LOW;
+            data_in <= 8'h00;
+            addr <= 5'h00;
+            mode_btn_prev <= 1'b0;
+            decrypt <= 1'b0;
+        end else begin
+            // Detect button press (rising edge)
+            mode_btn_prev <= mode_btn;
+            
+            // State machine
+            case (state)
+                STATE_DATA_LOW: begin
+                    // Lower nibble of data comes from switches
+                    data_in[3:0] <= sw;
+                    
+                    // If mode button pressed, move to next state
+                    if (mode_btn && !mode_btn_prev) begin
+                        state <= STATE_DATA_HIGH;
+                    end
+                end
+                
+                STATE_DATA_HIGH: begin
+                    // Upper nibble of data comes from switches
+                    data_in[7:4] <= sw;
+                    
+                    // If mode button pressed, move to next state
+                    if (mode_btn && !mode_btn_prev) begin
+                        state <= STATE_ADDR;
+                    end
+                end
+                
+                STATE_ADDR: begin
+                    // Lower 3 bits of address come from switches
+                    addr[2:0] <= sw[2:0];
+                    // SW3 can be used for addr bit 3
+                    addr[3] <= sw[3];
+                    // Use decrypt mode bit from SW0 when in this state
+                    decrypt <= sw[0];
+                    
+                    // If mode button pressed, move to next state
+                    if (mode_btn && !mode_btn_prev) begin
+                        state <= STATE_MONITOR;
+                    end
+                end
+                
+                STATE_MONITOR: begin
+                    // In monitor state, user can observe outputs
+                    // If mode button pressed, cycle back to first state
+                    if (mode_btn && !mode_btn_prev) begin
+                        state <= STATE_DATA_LOW;
+                    end
+                end
+            endcase
+        end
+    end
+    
+    // Output assignment
+    // LEDs 0-3: Current data output nibble
+    // LEDs 4-6: Status indicators (busy, valid, done)
+    // LED 7: Current state indicator
+    assign led_out[3:0] = data_out[3:0];  // Show lower nibble of output data
+    assign led_out[4] = busy;             // LED4 shows busy status
+    assign led_out[5] = valid;            // LED5 shows valid status
+    assign led_out[6] = done;             // LED6 shows done status
+    assign led_out[7] = (state == STATE_MONITOR); // LED7 on when in monitor state
+    
 endmodule
 
 /* 
 IMPLEMENTATION NOTES:
 
 This is a revised implementation of the AES-128 encryption/decryption module specifically 
-for the ZYBO Z7-10 FPGA. The original wide parallel interface has been replaced with a 
-serial interface to reduce I/O pin count from 381 to 24 pins, solving the overutilization issue.
-
-The module uses the pipelined AES core internally but provides a byte-by-byte interface
-for loading data/key and reading results.
+for the ZYBO Z7-10 FPGA. It addresses the limited I/O capabilities of the board by
+implementing a state machine approach that maximizes the use of the available buttons
+and switches.
 
 USAGE INSTRUCTIONS:
 
-1. Loading Data:
-   - Set the address (addr[4:0]) to select which byte to load:
-     * 0-15: Input data bytes (most significant byte first)
-     * 16-31: Key bytes (most significant byte first)
-   - Set the input data (data_in[7:0]) to the desired value
-   - Assert wr_en (press BTN2) to store the byte
-   - Repeat for all 32 bytes (16 for data, 16 for key)
+The module uses a state machine with four states, controlled by the mode button (BTN3):
 
-2. Starting Operation:
-   - Select encrypt/decrypt mode using decrypt switch (SW0)
-   - Assert start (press BTN1) to begin operation
-   - The busy LED will indicate the core is processing
-   - Wait for done LED to indicate completion
+1. DATA_LOW State:
+   - Set the lower 4 bits of data using the switches (SW0-SW3)
+   - Press mode button (BTN3) to advance to DATA_HIGH state
 
-3. Reading Results:
-   - Set the address (addr[4:0]) to select which byte to read (0-15)
-   - Observe the output byte on data_out LEDs (LED0-LED7)
-   - The valid LED indicates output data is valid
-   - Repeat for all 16 bytes of the result
+2. DATA_HIGH State:
+   - Set the upper 4 bits of data using the switches (SW0-SW3)
+   - Press mode button (BTN3) to advance to ADDR state
+
+3. ADDR State:
+   - Set the address bits using switches:
+     * SW0: Set decrypt mode (1=decrypt, 0=encrypt)
+     * SW1-SW3: Lower 3 bits of address
+     * SW4: 4th bit of address (if needed)
+   - Press write enable (BTN2) to store the byte at the selected address
+   - Press mode button (BTN3) to advance to MONITOR state
+
+4. MONITOR State:
+   - View the output data on LEDs 0-3 (lower nibble of the output byte)
+   - Status indicators:
+     * LED4: Busy
+     * LED5: Valid
+     * LED6: Done
+     * LED7: Monitor state indicator (on when in MONITOR state)
+   - Press start (BTN1) to begin encryption/decryption
+   - Press mode button (BTN3) to return to DATA_LOW state
+
+Loading process:
+1. Load all 16 data bytes (address 0-15)
+2. Load all 16 key bytes (address 16-31)
+3. Enter monitor state, select decrypt mode if needed
+4. Press start button to begin operation
+5. After operation completes, set address (0-15) to view results
 
 Hardware Connections:
 - Clock: Connect to 125MHz system clock (K17)
 - Reset: Connect to BTN0 (K18)
 - Start: Connect to BTN1 (P16)
 - Write Enable: Connect to BTN2 (K19)
-- Address[4:0]: Connect to SW1-SW5
-- Data_in[7:0]: Connect to SW6-SW13
-- Decrypt: Connect to SW0 (G15)
-- Data_out[7:0]: Connect to LED0-LED7
-- Busy: Connect to LED8
-- Valid: Connect to LED9
-- Done: Connect to LED10
+- Mode Button: Connect to BTN3 (Y16)
+- Switches: Connect to SW0-SW3
+- LED Output: Connect to LED0-LED7
 */
