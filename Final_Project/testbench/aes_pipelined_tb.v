@@ -1,5 +1,6 @@
 // Pipelined AES Testbench
 // Performs a throughput comparison between pipelined and non-pipelined implementations
+// Enhanced to thoroughly test decryption functionality
 
 `timescale 1ns / 1ps
 
@@ -25,8 +26,10 @@ module aes_pipelined_tb;
     localparam NUM_TEST_BLOCKS = 16;
     reg [127:0] test_blocks [0:NUM_TEST_BLOCKS-1];
     reg [127:0] encrypted_blocks [0:NUM_TEST_BLOCKS-1];
+    reg [127:0] decrypted_blocks [0:NUM_TEST_BLOCKS-1];
     integer block_count = 0;
     integer output_count = 0;
+    integer decryption_errors = 0;
     
     // Clock generation
     initial begin
@@ -83,7 +86,7 @@ module aes_pipelined_tb;
         decrypt = 0;
         
         // First, verify basic functionality with a single block
-        $display("Testing single block encryption with NIST test vector");
+        $display("Test 1: Single Block Encryption with NIST Test Vector");
         data_in = PLAINTEXT;
         enable = 1;
         #10; // One clock cycle
@@ -97,6 +100,8 @@ module aes_pipelined_tb;
         // Check result against expected
         if (data_out == EXPECTED_CIPHERTEXT) begin
             $display("Basic encryption test PASSED: Result matches expected ciphertext");
+            $display("Plaintext:  %h", PLAINTEXT);
+            $display("Ciphertext: %h", data_out);
         end else begin
             $display("Basic encryption test FAILED: Result does not match expected");
             $display("Expected: %h", EXPECTED_CIPHERTEXT);
@@ -105,8 +110,47 @@ module aes_pipelined_tb;
         
         #50; // Wait a bit
         
-        // Now test pipeline throughput with multiple blocks
-        $display("\nTesting pipeline throughput with %d blocks", NUM_TEST_BLOCKS);
+        // Test 2: Basic decryption of a single block using the NIST test vector
+        $display("\nTest 2: Single Block Decryption with NIST Test Vector");
+        rst = 1;
+        #20;
+        rst = 0;
+        #20;
+        
+        key = KEY;
+        decrypt = 1;
+        data_in = EXPECTED_CIPHERTEXT;
+        enable = 1;
+        #10; // One clock cycle
+        enable = 0;
+        
+        // Wait for valid output
+        wait(valid_out);
+        // Wait for one more cycle to capture the result
+        #10;
+        
+        // Check result against expected
+        if (data_out == PLAINTEXT) begin
+            $display("Basic decryption test PASSED: Result matches original plaintext");
+            $display("Ciphertext: %h", EXPECTED_CIPHERTEXT);
+            $display("Plaintext:  %h", data_out);
+        end else begin
+            $display("Basic decryption test FAILED: Result does not match original plaintext");
+            $display("Expected: %h", PLAINTEXT);
+            $display("Got: %h", data_out);
+        end
+        
+        #50; // Wait a bit
+        
+        // Test 3: Pipeline throughput test with multiple blocks
+        $display("\nTest 3: Pipeline Throughput with %d Blocks", NUM_TEST_BLOCKS);
+        rst = 1;
+        #20;
+        rst = 0;
+        #20;
+        
+        key = KEY;
+        decrypt = 0; // Encryption
         
         // Start timer
         integer start_time, end_time;
@@ -136,38 +180,65 @@ module aes_pipelined_tb;
         // Calculate throughput
         real throughput = (NUM_TEST_BLOCKS * 128.0) / ((end_time - start_time) / 1000.0); // bits/ns = Gbps
         
-        $display("Pipeline test completed");
+        $display("Pipeline encryption test completed");
         $display("Total time for %d blocks: %d ns", NUM_TEST_BLOCKS, (end_time - start_time));
         $display("Theoretical throughput: %.2f Gbps at 100MHz", throughput);
         $display("First encrypted block: %h", encrypted_blocks[0]);
         $display("Last encrypted block: %h", encrypted_blocks[NUM_TEST_BLOCKS-1]);
         
-        // Now test decryption to verify roundtrip
-        $display("\nTesting decryption of first block");
+        // Test 4: Multi-block decryption test
+        $display("\nTest 4: Multi-Block Decryption Test");
         rst = 1;
         #20;
         rst = 0;
         #20;
         
-        data_in = encrypted_blocks[0];
         key = KEY;
-        decrypt = 1;
-        enable = 1;
-        #10; // One clock cycle
+        decrypt = 1; // Decryption
+        
+        // Start timer for decryption
+        start_time = $time;
+        
+        // Feed all encrypted blocks into the pipeline, one per clock cycle
+        for (block_count = 0; block_count < NUM_TEST_BLOCKS; block_count = block_count + 1) begin
+            data_in = encrypted_blocks[block_count];
+            enable = 1;
+            #10; // One clock cycle
+        end
         enable = 0;
         
-        // Wait for valid output
-        wait(valid_out);
-        // Wait for one more cycle to capture the result
-        #10;
+        // Wait until all blocks have been processed
+        output_count = 0;
+        decryption_errors = 0;
+        while (output_count < NUM_TEST_BLOCKS) begin
+            if (valid_out) begin
+                decrypted_blocks[output_count] = data_out;
+                // Check if decrypted block matches original
+                if (decrypted_blocks[output_count] != test_blocks[output_count]) begin
+                    decryption_errors = decryption_errors + 1;
+                    $display("Decryption error in block %d:", output_count);
+                    $display("  Original: %h", test_blocks[output_count]);
+                    $display("  Decrypted: %h", decrypted_blocks[output_count]);
+                end
+                output_count = output_count + 1;
+            end
+            #10; // One clock cycle
+        end
         
-        // Check result against expected
-        if (data_out == test_blocks[0]) begin
-            $display("Decryption test PASSED: Result matches original plaintext");
+        // Record end time for decryption
+        end_time = $time;
+        
+        // Calculate decryption throughput
+        throughput = (NUM_TEST_BLOCKS * 128.0) / ((end_time - start_time) / 1000.0); // bits/ns = Gbps
+        
+        $display("Pipeline decryption test completed");
+        $display("Total time for decrypting %d blocks: %d ns", NUM_TEST_BLOCKS, (end_time - start_time));
+        $display("Decryption throughput: %.2f Gbps at 100MHz", throughput);
+        
+        if (decryption_errors == 0) begin
+            $display("ALL DECRYPTION TESTS PASSED! All %d blocks were correctly decrypted.", NUM_TEST_BLOCKS);
         end else begin
-            $display("Decryption test FAILED: Result does not match original plaintext");
-            $display("Expected: %h", test_blocks[0]);
-            $display("Got: %h", data_out);
+            $display("DECRYPTION TESTS FAILED! %d out of %d blocks had errors.", decryption_errors, NUM_TEST_BLOCKS);
         end
         
         // Finish simulation
