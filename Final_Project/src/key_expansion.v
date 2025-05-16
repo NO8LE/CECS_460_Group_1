@@ -75,6 +75,7 @@ module key_expansion(
             for (i = 0; i <= 10; i = i + 1) begin
                 round_keys[i] <= 128'b0;
             end
+            temp_word_reg <= 32'b0;
         end else begin
             // The first round key is the initial key
             round_keys[0] <= key;
@@ -82,18 +83,18 @@ module key_expansion(
             // Generate remaining round keys
             for (i = 1; i <= 10; i = i + 1) begin
                 // Extract words from the previous round key
-                temp_word_reg = round_keys[i-1][31:0];  // Last word of previous round key
+                temp_word_reg <= round_keys[i-1][31:0];  // Last word of previous round key
                 
                 // Apply RotWord and SubWord, then XOR with Rcon
-                // Use a separate variable for the result to avoid Set/Reset conflict
-                round_keys[i][127:96] = round_keys[i-1][127:96] ^ {subbed_byte0 ^ rcon[i-1], subbed_byte1, subbed_byte2, subbed_byte3};
+                // Use non-blocking assignments to avoid Set/Reset conflict
+                round_keys[i][127:96] <= round_keys[i-1][127:96] ^ {subbed_byte0 ^ rcon[i-1], subbed_byte1, subbed_byte2, subbed_byte3};
                 
                 // First word is already generated above
                 
                 // Generate the remaining words
-                round_keys[i][95:64] = round_keys[i-1][95:64] ^ round_keys[i][127:96];
-                round_keys[i][63:32] = round_keys[i-1][63:32] ^ round_keys[i][95:64];
-                round_keys[i][31:0] = round_keys[i-1][31:0] ^ round_keys[i][63:32];
+                round_keys[i][95:64] <= round_keys[i-1][95:64] ^ round_keys[i][127:96];
+                round_keys[i][63:32] <= round_keys[i-1][63:32] ^ round_keys[i][95:64];
+                round_keys[i][31:0] <= round_keys[i-1][31:0] ^ round_keys[i][63:32];
             end
         end
     end

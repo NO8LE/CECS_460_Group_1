@@ -71,10 +71,10 @@ module aes_serial_interface (
                     if (wr_en) begin
                         if (addr < 5'd16) begin
                             // Loading data_in bytes (addr 0-15)
-                            full_data_in[127-8*addr -: 8] <= data_in;
+                            full_data_in[127-8*addr[3:0] -: 8] <= data_in;
                         end else if (addr < 5'd32) begin
                             // Loading key bytes (addr 16-31)
-                            full_key[127-8*(addr-16) -: 8] <= data_in;
+                            full_key[127-8*(addr[3:0]) -: 8] <= data_in;
                         end
                     end
                     
@@ -121,7 +121,7 @@ module aes_serial_interface (
                 COMPLETE: begin
                     // Operation is complete, can still read output bytes
                     if (addr < 5'd16) begin
-                        data_out <= full_data_out[127-8*addr -: 8];
+                        data_out <= full_data_out[127-8*addr[3:0] -: 8];
                     end
                     
                     // Return to IDLE when start is released
