@@ -9,9 +9,8 @@ module aes_top(
     input wire rst,                  // Reset button (BTN0) - K18
     input wire start,                // Start operation (BTN1) - P16
     input wire wr_en,                // Write enable for loading data (BTN2) - K19
-    input wire [3:0] addr,           // Address bits from switches and button
-    input wire [3:0] data_in,        // Data input bits (shared with addr and decrypt)
-    input wire decrypt,              // Decrypt mode select (SW0)
+    input wire mode_btn,             // Mode toggle button (BTN3) - Y16
+    input wire [3:0] sw,             // 4 switches (SW0-SW3)
     output wire [3:0] data_out,      // Data output LEDs (lower 4 bits)
     output wire busy,                // Busy indicator - RGB LED
     output wire valid,               // Valid indicator - RGB LED
@@ -22,9 +21,7 @@ module aes_top(
     reg [7:0] full_data_in;          // Full 8-bit data input to AES core
     reg [4:0] full_addr;             // Full 5-bit address for AES core
     wire [7:0] full_data_out;        // Full 8-bit data output from AES core
-    
-    // Control signals
-    wire mode_btn = addr[3];         // Mode button is the same as addr[3]
+    reg decrypt;                     // Internal decrypt signal
     
     // State machine states
     localparam STATE_DATA_LOW  = 2'd0;  // Input lower nibble of data
@@ -69,6 +66,7 @@ module aes_top(
             full_data_in <= 8'h00;
             full_addr <= 5'h00;
             mode_btn_prev <= 1'b0;
+            decrypt <= 1'b0;
         end else begin
             // Detect button press (rising edge)
             mode_btn_prev <= mode_btn;
@@ -76,8 +74,8 @@ module aes_top(
             // State machine
             case (state)
                 STATE_DATA_LOW: begin
-                    // Lower nibble of data comes from external data_in
-                    full_data_in[3:0] <= data_in;
+                    // Lower nibble of data comes from switches
+                    full_data_in[3:0] <= sw;
                     
                     // If mode button pressed, move to next state
                     if (mode_btn && !mode_btn_prev) begin
@@ -86,8 +84,8 @@ module aes_top(
                 end
                 
                 STATE_DATA_HIGH: begin
-                    // Upper nibble of data comes from external data_in
-                    full_data_in[7:4] <= data_in;
+                    // Upper nibble of data comes from switches
+                    full_data_in[7:4] <= sw;
                     
                     // If mode button pressed, move to next state
                     if (mode_btn && !mode_btn_prev) begin
@@ -96,10 +94,12 @@ module aes_top(
                 end
                 
                 STATE_ADDR: begin
-                    // Address is now directly from the external addr port
-                    full_addr[3:0] <= addr[3:0];
-                    // MSB of addr remains at 0 for now (data address range)
-                    full_addr[4] <= (addr[2:0] == 3'b111) ? addr[3] : 1'b0;
+                    // Address comes from switches
+                    full_addr[3:0] <= sw;
+                    // MSB of addr computed from lower bits
+                    full_addr[4] <= (sw[2:0] == 3'b111) ? sw[3] : 1'b0;
+                    // Set decrypt mode from SW0
+                    decrypt <= sw[0];
                     
                     // If mode button pressed, move to next state
                     if (mode_btn && !mode_btn_prev) begin
