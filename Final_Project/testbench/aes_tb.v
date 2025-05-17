@@ -40,9 +40,11 @@ module aes_tb;
     reg [127:0] read_data;
     reg [127:0] encrypted_data;
     reg [127:0] decrypted_data;
+    reg [127:0] roundtrip_encrypted;
     integer i;
     integer errors = 0;
     integer tests_run = 0;
+    integer test_result;
     
     // Clock generation
     initial begin
@@ -340,7 +342,6 @@ module aes_tb;
         #20;
         
         // Test variables
-        integer test_result;
         
         // Test 1: Basic Encryption Test with NIST Vector
         run_encryption_test(PLAINTEXT, KEY, EXPECTED_CIPHERTEXT, 1, test_result);
@@ -363,7 +364,7 @@ module aes_tb;
         run_encryption_test(PLAINTEXT, KEY, EXPECTED_CIPHERTEXT, 5, test_result);
         
         // Store the encrypted data
-        reg [127:0] roundtrip_encrypted = encrypted_data;
+        roundtrip_encrypted = encrypted_data;
         
         // Then decrypt the result
         run_decryption_test(roundtrip_encrypted, KEY, PLAINTEXT, 6, test_result);

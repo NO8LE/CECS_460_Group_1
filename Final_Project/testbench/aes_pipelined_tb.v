@@ -30,6 +30,9 @@ module aes_pipelined_tb;
     integer block_count = 0;
     integer output_count = 0;
     integer decryption_errors = 0;
+    integer start_time;
+    integer end_time;
+    real throughput;
     
     // Clock generation
     initial begin
@@ -153,7 +156,6 @@ module aes_pipelined_tb;
         decrypt = 0; // Encryption
         
         // Start timer
-        integer start_time, end_time;
         start_time = $time;
         
         // Feed all blocks into the pipeline, one per clock cycle
@@ -178,7 +180,7 @@ module aes_pipelined_tb;
         end_time = $time;
         
         // Calculate throughput
-        real throughput = (NUM_TEST_BLOCKS * 128.0) / ((end_time - start_time) / 1000.0); // bits/ns = Gbps
+        throughput = (NUM_TEST_BLOCKS * 128.0) / ((end_time - start_time) / 1000.0); // bits/ns = Gbps
         
         $display("Pipeline encryption test completed");
         $display("Total time for %d blocks: %d ns", NUM_TEST_BLOCKS, (end_time - start_time));
