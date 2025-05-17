@@ -114,7 +114,7 @@ module aes_serial_interface (
                         state <= COMPLETE;
                         done <= 1'b1;
                     end else begin
-                        byte_counter <= byte_counter + 1'b1; // Use explicit 1-bit value
+                        byte_counter <= byte_counter + 5'd1; // Use explicit 5-bit value
                     end
                 end
                 
